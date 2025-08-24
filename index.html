@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prospira Finance Management System 2025</title>
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS configuration for custom colors and fonts
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#0ea5e9',
+                        success: '#059669',
+                        warning: '#d97706',
+                        danger: '#dc2626',
+                        dark: '#1f2937',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Custom CSS Styles -->
+    <style>
+        /* General tab and sidebar styling */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-button.active {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+        .editable-cell {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 120px;
+        }
+        .editable-cell:hover {
+            background-color: #f1f5f9;
+            transform: translateY(-1px);
+        }
+        .editing {
+            background-color: #dbeafe !important;
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            border-radius: 16px;
+            padding: 24px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
+            transition: transform 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        .sidebar {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            min-height: 100vh;
+            width: 280px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+            max-height: 100vh;
+        }
+        .sidebar-content {
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 20px;
+        }
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8fafc 0%, #e1e7ef 100%);
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            margin: 4px 12px;
+            border-radius: 12px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            transform: translateX(5px);
+        }
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+        }
+        .chart-toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .chart-toggle-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        .chart-toggle-btn.active {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            border-color: #1e40af;
+            color: white;
+        }
+        .chart-container-wrapper {
+            transition: all 0.3s ease;
+        }
+        .chart-container-wrapper.hidden {
+            display: none;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 600px;
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
+        .modal.open .modal-content {
+            transform: scale(1);
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover, .close-btn:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            padding-right: 2.5rem;
+        }
+        .search-box .clear-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 1.25rem;
+            display: none;
+        }
+    </style>
+</head>
+<body class="font-sans bg-light">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="p-6 border-b border-gray-700">
+            <h1 class="text-xl font-bold text-white">Prospira</h1>
+            <p class="text-gray-400 text-sm mt-1">Simplifying Finance for Growth and Clarity</p>
+            
+            <!-- Company Section -->
+            <div class="mt-4 p-3 bg-gray-800 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wide">Company</p>
+                        <p class="text-white font-medium" id="companyName">Click to set company name</p>
+                    </div>
+                    <button onclick="editCompanyName()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-edit text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-content">
+            <!-- CORE DASHBOARD -->
+            <a href="#" class="nav-item active" onclick="showTab('dashboard')">
+                <i class="fas fa-chart-line"></i>
+                Dashboard
+            </a>
+
+            <!-- DATA ENTRY SECTION -->
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Data Entry</div>
+            <a href="#" class="nav-item" onclick="showTab('project-profile')">
+                <i class="fas fa-project-diagram"></i>
+                Project Profile
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('transaction-masters')">
+                <i class="fas fa-exchange-alt"></i>
+                Transaction Masters
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('collections-master')">
+                <i class="fas fa-coins"></i>
+                Collections Master
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('reference-table')">
+                <i class="fas fa-table"></i>
+                Reference Table
+            </a>
+
+            <!-- PROJECT ANALYSIS -->
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">Project Analysis</div>
+            <a href="#" class="nav-item" onclick="showTab('project-revenue')">
+                <i class="fas fa-money-bill-wave"></i>
+                Project Revenue
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('project-cost')">
+                <i class="fas fa-calculator"></i>
+                Project Cost
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('budget-actual')">
+                <i class="fas fa-balance-scale"></i>
+                Budget vs Actual
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('overhead-summary')">
+                <i class="fas fa-chart-pie"></i>
+                Overhead Summary
+            </a>
+
+            <!-- FINANCIAL STATEMENTS -->
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">Financial Statements</div>
+            <a href="#" class="nav-item" onclick="showTab('profit-loss')">
+                <i class="fas fa-chart-bar"></i>
+                Profit & Loss
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('balance-sheet')">
+                <i class="fas fa-balance-scale-right"></i>
+                Balance Sheet
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('cash-flow')">
+                <i class="fas fa-water"></i>
+                Cash Flow Statement
+            </a>
+
+            <!-- ACCOUNTING RECORDS -->
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">Accounting Records</div>
+            <a href="#" class="nav-item" onclick="showTab('accounts-receivable')">
+                <i class="fas fa-file-invoice-dollar"></i>
+                Accounts Receivable
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('accounts-payable')">
+                <i class="fas fa-file-invoice"></i>
+                Accounts Payable
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('general-ledger')">
+                <i class="fas fa-book"></i>
+                General Ledger
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('trial-balance')">
+                <i class="fas fa-calculator"></i>
+                Trial Balance
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('journal-entries')">
+                <i class="fas fa-edit"></i>
+                Journal Entries
+            </a>
+
+            <!-- ASSETS & EQUITY -->
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">Assets & Equity</div>
+            <a href="#" class="nav-item" onclick="showTab('fixed-assets')">
+                <i class="fas fa-building"></i>
+                Fixed Assets
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('owners-capital')">
+                <i class="fas fa-user-tie"></i>
+                Owners' Capital
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('owners-liability')">
+                <i class="fas fa-clipboard-list"></i>
+                Owners' Liability
+            </a>
+
+            <!-- REPORTS -->
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">Reports</div>
+            <a href="#" class="nav-item" onclick="showTab('financial-reports')">
+                <i class="fas fa-chart-area"></i>
+                Financial Reports
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="glass-card border-b p-6 sticky top-0 z-50">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="toggleSidebar()" class="lg:hidden mr-4 p-2 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900" id="pageTitle">Dashboard</h2>
+                        <p class="text-gray-600 text-sm">Real-time financial insights and analytics</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="importExcel()" class="bg-success hover:bg-green-600 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl">
+                        <i class="fas fa-file-import"></i>
+                        Import Excel
+                    </button>
+                    <button onclick="exportExcel()" class="bg-primary hover:bg-indigo-600 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl">
+                        <i class="fas fa-file-export"></i>
+                        Export Excel
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab Content -->
+        <main class="p-6">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <!-- Key Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm font-medium">Total Revenue</p>
+                                <p class="text-3xl font-bold mt-2" id="totalRevenue">₱0.00</p>
+                            </div>
+                            <i class="fas fa-chart-line text-3xl text-white/60"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm font-medium">Total Collections</p>
+                                <p class="text-3xl font-bold mt-2" id="totalCollections">₱0.00</p>
+                            </div>
+                            <i class="fas fa-coins text-3xl text-white/60"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm font-medium">Total Expenses</p>
+                                <p class="text-3xl font-bold mt-2" id="totalExpenses">₱0.00</p>
+                            </div>
+                            <i class="fas fa-credit-card text-3xl text-white/60"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm font-medium">Net Profit</p>
+                                <p class="text-3xl font-bold mt-2" id="netProfit">₱0.00</p>
+                            </div>
+                            <i class="fas fa-trophy text-3xl text-white/60"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Customization Panel -->
+                <div class="glass-card rounded-2xl p-6 shadow-xl mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Dashboard Charts</h3>
+                        <button onclick="showAddChartModal()" class="bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-lg transition-all duration-300">
+                            <i class="fas fa-plus mr-2"></i>Add Custom Chart
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4" id="chartToggleButtons">
+                        <button onclick="toggleChart('monthlyRevenueExpensesChart')" class="chart-toggle-btn active" data-chart="monthlyRevenueExpensesChart">
+                            <i class="fas fa-chart-line mr-2"></i>Monthly Revenue vs Expenses
+                        </button>
+                        <button onclick="toggleChart('projectProfitabilityChart')" class="chart-toggle-btn active" data-chart="projectProfitabilityChart">
+                            <i class="fas fa-chart-bar mr-2"></i>Project Profitability
+                        </button>
+                        <button onclick="toggleChart('cashFlowChart')" class="chart-toggle-btn active" data-chart="cashFlowChart">
+                            <i class="fas fa-water mr-2"></i>Cash Flow Trend
+                        </button>
+                        <button onclick="toggleChart('expenseCategoriesChart')" class="chart-toggle-btn active" data-chart="expenseCategoriesChart">
+                            <i class="fas fa-chart-pie mr-2"></i>Expense Categories
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" id="chartsGrid">
+                    <div class="glass-card rounded-2xl p-6 shadow-xl chart-container-wrapper" id="monthlyRevenueExpensesChart-wrapper">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Monthly Revenue vs Expenses</h3>
+                            <button onclick="removeChart('monthlyRevenueExpensesChart')" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="monthlyRevenueExpensesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-6 shadow-xl chart-container-wrapper" id="projectProfitabilityChart-wrapper">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Project Profitability Analysis</h3>
+                            <button onclick="removeChart('projectProfitabilityChart')" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="projectProfitabilityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-6 shadow-xl chart-container-wrapper" id="cashFlowChart-wrapper">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Cash Flow Trend</h3>
+                            <button onclick="removeChart('cashFlowChart')" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="cashFlowChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-6 shadow-xl chart-container-wrapper" id="expenseCategoriesChart-wrapper">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Expense Categories Breakdown</h3>
+                            <button onclick="removeChart('expenseCategoriesChart')" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="expenseCategoriesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outstanding Items -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">Outstanding Receivables</h3>
+                        <div class="text-3xl font-bold text-success" id="outstandingReceivables">₱0.00</div>
+                        <p class="text-gray-600 mt-2">Pending collections from clients</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">Outstanding Payables</h3>
+                        <div class="text-3xl font-bold text-danger" id="outstandingPayables">₱0.00</div>
+                        <p class="text-gray-600 mt-2">Pending payments to vendors</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Profile Tab -->
+            <div id="project-profile" class="tab-content">
+                <div class="glass-card rounded-2xl p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Project Profile</h2>
+                        <div class="flex gap-3">
+                            <button onclick="addProject()" class="bg-primary hover:bg-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-300">
+                                <i class="fas fa-plus mr-2"></i>Add Project
+                            </button>
+                            <button onclick="removeProject()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-300">
+                                <i class="fas fa-trash mr-2"></i>Remove Project
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="projectCards" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <!-- Project cards will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Masters Tab -->
+            <div id="transaction-masters" class="tab-content">
+                <div class="glass-card rounded-2xl p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Transaction Masters</h2>
+                        <div class="flex gap-3">
+                            <button onclick="addTransaction()" class="bg-primary hover:bg-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-300">
+                                <i class="fas fa-plus mr-2"></i>Add Transaction
+                            </button>
+                            <button onclick="removeTransaction()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-300">
+                                <i class="fas fa-trash mr-2"></i>Remove Transaction
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Date</th>
+                                    <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Description</th>
+                                    <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Category</th>
+                                    <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Amount (₱)</th>
+                                    <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Type</th>
+                                    <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable">
+                                <!-- Transaction entries will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collections Master Tab -->
+            <div id="collections-master" class="tab-content">
+                <div class="glass-card rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Collections Master</h2>
+                    <p class="text-gray-600">This section handles incoming payments and collections from clients.</p>
+                </div>
+            </div>
+
+            <!-- Reference Table Tab -->
+            <div id="reference-table" class="tab-content">
+                <div class="space-y-6">
+                    <!-- COA Section -->
+                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-800">Chart of Accounts (BIR-Aligned)</h3>
+                            <div class="flex gap-2">
+                                <button onclick="addCOA()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Add Account
+                                </button>
+                                <button onclick="removeCOA()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                                    <i class="fas fa-trash mr-2"></i>Remove Account
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Old COA</th>
+                                        <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Unified Code</th>
+                                        <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Account Name</th>
+                                        <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Category</th>
+                                        <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Subcategory</th>
+                                        <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Notes</th>
+                                        <th class="border border-gray-200 px-4 py-3 text-left font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coaTable">
+                                    <!-- COA entries will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 500 Series Project Expenses -->
+                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">500 Series Project Expenses</h3>
+                            <div class="flex gap-2">
+                                <button onclick="addProjectExpense()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Add Expense
+                                </button>
+                                <button onclick="removeProjectExpense()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                                    <i class="fas fa-trash mr-2"></i>Remove
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="projectExpensesList">
+                            <!-- Project expenses will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Operating Funds -->
+                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Operating Funds</h3>
+                            <div class="flex gap-2">
+                                <button onclick="addOperatingFund()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Add Fund
+                                </button>
+                                <button onclick="removeOperatingFund()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                                    <i class="fas fa-trash mr-2"></i>Remove
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="operatingFundsList">
+                            <!-- Operating funds will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Expense Categories -->
+                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Expense Categories</h3>
+                            <div class="flex gap-2">
+                                <button onclick="addExpenseCategory()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Add Category
+                                </button>
+                                <button onclick="removeExpenseCategory()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                                    <i class="fas fa-trash mr-2"></i>Remove
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="expenseCategoriesList">
+                            <!-- Expense categories will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hidden tabs placeholder -->
+            <div id="project-revenue" class="tab-content"><h2 class="text-2xl font-bold p-6">Project Revenue</h2></div>
+            <div id="project-cost" class="tab-content"><h2 class="text-2xl font-bold p-6">Project Cost</h2></div>
+            <div id="budget-actual" class="tab-content"><h2 class="text-2xl font-bold p-6">Budget vs Actual</h2></div>
+            <div id="overhead-summary" class="tab-content"><h2 class="text-2xl font-bold p-6">Overhead Summary</h2></div>
+            <div id="profit-loss" class="tab-content"><h2 class="text-2xl font-bold p-6">Profit & Loss</h2></div>
+            <div id="balance-sheet" class="tab-content"><h2 class="text-2xl font-bold p-6">Balance Sheet</h2></div>
+            <div id="cash-flow" class="tab-content"><h2 class="text-2xl font-bold p-6">Cash Flow Statement</h2></div>
+            <div id="accounts-receivable" class="tab-content"><h2 class="text-2xl font-bold p-6">Accounts Receivable</h2></div>
+            <div id="accounts-payable" class="tab-content"><h2 class="text-2xl font-bold p-6">Accounts Payable</h2></div>
+            <div id="general-ledger" class="tab-content"><h2 class="text-2xl font-bold p-6">General Ledger</h2></div>
+            <div id="trial-balance" class="tab-content"><h2 class="text-2xl font-bold p-6">Trial Balance</h2></div>
+            <div id="journal-entries" class="tab-content"><h2 class="text-2xl font-bold p-6">Journal Entries</h2></div>
+            <div id="fixed-assets" class="tab-content"><h2 class="text-2xl font-bold p-6">Fixed Assets</h2></div>
+            <div id="owners-capital" class="tab-content"><h2 class="text-2xl font-bold p-6">Owners' Capital</h2></div>
+            <div id="owners-liability" class="tab-content"><h2 class="text-2xl font-bold p-6">Owners' Liability</h2></div>
+            <div id="financial-reports" class="tab-content"><h2 class="text-2xl font-bold p-6">Financial Reports</h2></div>
+
+        </main>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content text-center">
+            <span class="close-btn">&times;</span>
+            <p id="modalMessage" class="text-gray-800 font-semibold text-lg"></p>
+        </div>
+    </div>
+
+    <!-- Add Chart Modal -->
+    <div id="addChartModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Add Custom Chart</h3>
+            <div class="space-y-4">
+                <div>
+                    <label for="chartType" class="block text-sm font-medium text-gray-700">Chart Type</label>
+                    <select id="chartType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="bar">Bar Chart</option>
+                        <option value="line">Line Chart</option>
+                        <option value="pie">Pie Chart</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="chartTitle" class="block text-sm font-medium text-gray-700">Chart Title</label>
+                    <input type="text" id="chartTitle" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="e.g., Q3 Project Revenue">
+                </div>
+                <button onclick="addCustomChart()" class="w-full bg-primary text-white py-2 rounded-lg hover:bg-indigo-600 transition-colors mt-4">Add Chart</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript for functionality -->
+    <script>
+        // In-memory data store for the application
+        let appData = {
+            companyName: 'Prospira',
+            projects: [],
+            transactions: [],
+            coa: [],
+            projectExpenses: [],
+            operatingFunds: [],
+            expenseCategories: []
+        };
+        let charts = {};
+        const currencyFormatter = new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+        
+        // --- Core App Functions ---
+        
+        /**
+         * Initializes the application by loading data and rendering initial state.
+         */
+        function initApp() {
+            renderProjects();
+            renderTransactions();
+            renderCOA();
+            renderProjectExpenses();
+            renderOperatingFunds();
+            renderExpenseCategories();
+            updateMetrics();
+            renderCharts();
+        }
+
+        /**
+         * Switches the active tab content.
+         * @param {string} tabId - The ID of the tab to display.
+         */
+        function showTab(tabId) {
+            // Remove active class from all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Add active class to the selected tab content
+            document.getElementById(tabId).classList.add('active');
+
+            // Update sidebar active state
+            document.querySelectorAll('.nav-item').forEach(navItem => {
+                navItem.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+
+            // Update page title
+            const pageTitle = document.getElementById('pageTitle');
+            const navItemText = event.target.closest('.nav-item').innerText.trim();
+            pageTitle.textContent = navItemText;
+        }
+
+        /**
+         * Toggles the visibility of the sidebar on mobile.
+         */
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        /**
+         * Shows a modal with a given message.
+         * @param {string} message - The message to display.
+         */
+        function showMessage(message) {
+            const modal = document.getElementById('messageModal');
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        /**
+         * Closes a modal.
+         * @param {string} modalId - The ID of the modal to close.
+         */
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        /**
+         * Allows the user to edit the company name.
+         */
+        function editCompanyName() {
+            // NOTE: A more robust solution would be a custom modal, but a prompt is simple for now.
+            const newName = prompt('Enter new company name:', appData.companyName);
+            if (newName) {
+                appData.companyName = newName;
+                document.getElementById('companyName').textContent = newName;
+            }
+        }
+
+        // --- Excel Import/Export Functions ---
+
+        /**
+         * Imports data from an Excel file.
+         */
+        function importExcel() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx, .xls, .csv';
+            input.onchange = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        // Assuming the first sheet contains all data to be parsed
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                        // Basic parsing logic based on a simple row-by-row structure
+                        // This needs to be highly customized to match your specific Excel layout
+                        if (jsonData.length > 1) {
+                            // Clear existing data for demonstration
+                            appData.transactions = [];
+                            appData.projects = [];
+                            
+                            // Example of parsing simple data from a structured sheet
+                            const headers = jsonData[0];
+                            const rows = jsonData.slice(1);
+                            
+                            // Let's assume a simple transaction list for now
+                            const dateIndex = headers.findIndex(h => h.trim() === 'Date');
+                            const descriptionIndex = headers.findIndex(h => h.trim() === 'Description');
+                            const categoryIndex = headers.findIndex(h => h.trim() === 'Category');
+                            const amountIndex = headers.findIndex(h => h.trim() === 'Amount (₱)');
+                            const typeIndex = headers.findIndex(h => h.trim() === 'Type');
+
+                            rows.forEach(row => {
+                                if (row[dateIndex] && row[amountIndex]) {
+                                    appData.transactions.push({
+                                        date: row[dateIndex],
+                                        description: row[descriptionIndex],
+                                        category: row[categoryIndex],
+                                        amount: parseFloat(row[amountIndex]),
+                                        type: row[typeIndex],
+                                    });
+                                }
+                            });
+                            showMessage('Excel data imported successfully!');
+                            initApp(); // Re-render the app with new data
+                        } else {
+                            showMessage('Excel file is empty or has an invalid format.');
+                        }
+                    } catch (error) {
+                        console.error("Error importing file:", error);
+                        showMessage('Error importing file. Please check the file format.');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+            input.click();
+        }
+
+        /**
+         * Exports data to an Excel file.
+         */
+        function exportExcel() {
+            try {
+                const workbook = XLSX.utils.book_new();
+
+                // Create a dashboard sheet with key metrics
+                const metricsSheet = [
+                    ['Metric', 'Value'],
+                    ['Total Revenue', document.getElementById('totalRevenue').textContent],
+                    ['Total Collections', document.getElementById('totalCollections').textContent],
+                    ['Total Expenses', document.getElementById('totalExpenses').textContent],
+                    ['Net Profit', document.getElementById('netProfit').textContent],
+                ];
+                XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(metricsSheet), "Dashboard Summary");
+
+                // Create a transactions sheet from the appData
+                if (appData.transactions.length > 0) {
+                    const transactionsSheet = [
+                        ['Date', 'Description', 'Category', 'Amount (₱)', 'Type']
+                    ];
+                    appData.transactions.forEach(t => {
+                        transactionsSheet.push([t.date, t.description, t.category, t.amount, t.type]);
+                    });
+                    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(transactionsSheet), "Transactions");
+                }
+
+                // Create a reference table sheet (example)
+                if (appData.coa.length > 0) {
+                    const coaSheet = [
+                        ['Old COA', 'Unified Code', 'Account Name', 'Category', 'Subcategory', 'Notes']
+                    ];
+                    appData.coa.forEach(c => {
+                        coaSheet.push([c.oldCOA, c.unifiedCode, c.accountName, c.category, c.subcategory, c.notes]);
+                    });
+                    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(coaSheet), "Chart of Accounts");
+                }
+
+                XLSX.writeFile(workbook, 'Prospira_Financial_Data.xlsx');
+                showMessage('Data exported to Excel successfully!');
+            } catch (error) {
+                console.error("Error exporting file:", error);
+                showMessage('Error exporting file. Please try again.');
+            }
+        }
+
+        // --- Data & Rendering Functions (Placeholder Logic) ---
+
+        /**
+         * Renders the project cards.
+         */
+        function renderProjects() {
+            const container = document.getElementById('projectCards');
+            container.innerHTML = ''; // Clear existing cards
+            appData.projects.forEach((project, index) => {
+                const card = document.createElement('div');
+                card.classList.add('glass-card', 'rounded-xl', 'p-6', 'shadow-lg');
+                card.innerHTML = `
+                    <div class="mb-4">
+                        <h4 class="text-xl font-bold text-gray-800">${project.projectName}</h4>
+                    </div>
+
+                    <!-- Section 1: Project Information -->
+                    <div class="mb-4 border-b border-gray-200 pb-4">
+                        <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Project Information</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
+                            <div class="flex items-center"><i class="fas fa-id-card-alt mr-2 text-primary"></i> <strong>ID:</strong> ${project.projectId}</div>
+                            <div class="flex items-center"><i class="fas fa-info-circle mr-2 text-primary"></i> <strong>Status:</strong> ${project.status}</div>
+                            <div class="flex items-center"><i class="fas fa-user-circle mr-2 text-primary"></i> <strong>Client Name:</strong> ${project.clientName}</div>
+                            <div class="flex items-center"><i class="fas fa-tag mr-2 text-primary"></i> <strong>Project Type:</strong> ${project.projectType}</div>
+                            <div class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-primary"></i> <strong>Location:</strong> ${project.location}</div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Timeline -->
+                    <div class="mb-4 border-b border-gray-200 pb-4">
+                        <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Timeline</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
+                            <div class="flex items-center"><i class="fas fa-calendar-alt mr-2 text-primary"></i> <strong>Start Date:</strong> ${project.startDate}</div>
+                            <div class="flex items-center"><i class="fas fa-clock mr-2 text-primary"></i> <strong>Duration:</strong> ${project.duration}</div>
+                            <div class="flex items-center"><i class="fas fa-calendar-check mr-2 text-primary"></i> <strong>End Date:</strong> ${project.endDate}</div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Financial Summary -->
+                    <div class="mb-4">
+                        <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Financial Summary</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
+                            <div class="flex items-center"><i class="fas fa-file-invoice-dollar mr-2 text-success"></i> <strong>Contract Amount:</strong> ${currencyFormatter.format(project.contractAmount)}</div>
+                            <div class="flex items-center"><i class="fas fa-chart-line mr-2 text-success"></i> <strong>Profit:</strong> ${currencyFormatter.format(project.profit)}</div>
+                            <div class="flex items-center"><i class="fas fa-piggy-bank mr-2 text-secondary"></i> <strong>Approved Budget:</strong> ${currencyFormatter.format(project.approvedBudget)}</div>
+                            <div class="flex items-center"><i class="fas fa-percentage mr-2 text-secondary"></i> <strong>Margin %:</strong> ${project.marginPercent}%</div>
+                            <div class="flex items-center"><i class="fas fa-hand-holding-usd mr-2 text-accent"></i> <strong>Project Revenue:</strong> ${currencyFormatter.format(project.projectRevenue)}</div>
+                            <div class="flex items-center"><i class="fas fa-wallet mr-2 text-danger"></i> <strong>Project Cost:</strong> ${currencyFormatter.format(project.projectCost)}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /**
+         * Adds a new project card with placeholder data.
+         */
+        function addProject() {
+            const newProject = {
+                projectId: `PROJ-${appData.projects.length + 1}`,
+                status: 'Ongoing',
+                clientName: 'New Client',
+                projectName: 'New Project',
+                projectType: 'Web Development',
+                location: 'Manila, PH',
+                startDate: '2025-01-01',
+                duration: '6 Months',
+                endDate: '2025-06-30',
+                contractAmount: 150000,
+                profit: 75000,
+                approvedBudget: 100000,
+                marginPercent: 75,
+                projectRevenue: 150000,
+                projectCost: 75000
+            };
+            appData.projects.push(newProject);
+            renderProjects();
+        }
+
+        /**
+         * Removes the last added project.
+         */
+        function removeProject() {
+            appData.projects.pop();
+            renderProjects();
+        }
+
+        /**
+         * Renders the transaction table.
+         */
+        function renderTransactions() {
+            const tableBody = document.getElementById('transactionsTable');
+            tableBody.innerHTML = '';
+            appData.transactions.forEach((transaction, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border border-gray-200 px-4 py-3">${transaction.date}</td>
+                    <td class="border border-gray-200 px-4 py-3">${transaction.description}</td>
+                    <td class="border border-gray-200 px-4 py-3">${transaction.category}</td>
+                    <td class="border border-gray-200 px-4 py-3">${currencyFormatter.format(transaction.amount)}</td>
+                    <td class="border border-gray-200 px-4 py-3">${transaction.type}</td>
+                    <td class="border border-gray-200 px-4 py-3">
+                        <button onclick="removeTransaction(${index})" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        /**
+         * Adds a new transaction row.
+         */
+        function addTransaction() {
+            const newTransaction = {
+                date: new Date().toISOString().split('T')[0],
+                description: 'New Transaction',
+                category: 'Uncategorized',
+                amount: 0,
+                type: 'Expense'
+            };
+            appData.transactions.push(newTransaction);
+            renderTransactions();
+        }
+
+        /**
+         * Removes a transaction by index.
+         * @param {number} index - The index of the transaction to remove.
+         */
+        function removeTransaction(index) {
+            appData.transactions.splice(index, 1);
+            renderTransactions();
+        }
+        
+        // Functions for other Reference Table sections
+        function renderCOA() {
+            const tableBody = document.getElementById('coaTable');
+            tableBody.innerHTML = '';
+            // Render logic here
+        }
+        function addCOA() {
+            // Add new COA logic here
+            renderCOA();
+        }
+        function removeCOA() {
+            // Remove COA logic here
+            renderCOA();
+        }
+
+        function renderProjectExpenses() {
+            const container = document.getElementById('projectExpensesList');
+            container.innerHTML = '';
+            // Render logic here
+        }
+        function addProjectExpense() {
+            // Add new project expense logic here
+            renderProjectExpenses();
+        }
+        function removeProjectExpense() {
+            // Remove project expense logic here
+            renderProjectExpenses();
+        }
+
+        function renderOperatingFunds() {
+            const container = document.getElementById('operatingFundsList');
+            container.innerHTML = '';
+            // Render logic here
+        }
+        function addOperatingFund() {
+            // Add new operating fund logic here
+            renderOperatingFunds();
+        }
+        function removeOperatingFund() {
+            // Remove operating fund logic here
+            renderOperatingFunds();
+        }
+
+        function renderExpenseCategories() {
+            const container = document.getElementById('expenseCategoriesList');
+            container.innerHTML = '';
+            // Render logic here
+        }
+        function addExpenseCategory() {
+            // Add new expense category logic here
+            renderExpenseCategories();
+        }
+        function removeExpenseCategory() {
+            // Remove expense category logic here
+            renderExpenseCategories();
+        }
+
+
+        /**
+         * Updates the key metrics on the dashboard.
+         */
+        function updateMetrics() {
+            let totalRevenue = 0;
+            let totalExpenses = 0;
+            appData.transactions.forEach(t => {
+                if (t.type === 'Revenue' || t.type === 'Collection') {
+                    totalRevenue += t.amount;
+                } else if (t.type === 'Expense' || t.type === 'Payment') {
+                    totalExpenses += t.amount;
+                }
+            });
+
+            const netProfit = totalRevenue - totalExpenses;
+
+            document.getElementById('totalRevenue').textContent = currencyFormatter.format(totalRevenue);
+            document.getElementById('totalCollections').textContent = currencyFormatter.format(totalRevenue); // For now, collections = revenue
+            document.getElementById('totalExpenses').textContent = currencyFormatter.format(totalExpenses);
+            document.getElementById('netProfit').textContent = currencyFormatter.format(netProfit);
+            document.getElementById('outstandingReceivables').textContent = currencyFormatter.format(0); // Placeholder
+            document.getElementById('outstandingPayables').textContent = currencyFormatter.format(0); // Placeholder
+        }
+
+        // --- Chart Functions ---
+        
+        /**
+         * Renders all dashboard charts with dummy data.
+         */
+        function renderCharts() {
+            // Monthly Revenue vs Expenses Chart
+            const monthlyRevenueExpensesCtx = document.getElementById('monthlyRevenueExpensesChart').getContext('2d');
+            charts.monthlyRevenueExpensesChart = new Chart(monthlyRevenueExpensesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [12000, 19000, 3000, 5000, 20000, 30000],
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Expenses',
+                        data: [8000, 10000, 5000, 8000, 12000, 15000],
+                        borderColor: '#dc2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                }
+            });
+
+            // Project Profitability Chart
+            const projectProfitabilityCtx = document.getElementById('projectProfitabilityChart').getContext('2d');
+            charts.projectProfitabilityChart = new Chart(projectProfitabilityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Project A', 'Project B', 'Project C'],
+                    datasets: [{
+                        label: 'Profit',
+                        data: [15000, 8000, 25000],
+                        backgroundColor: ['#1e40af', '#059669', '#0ea5e9']
+                    }]
+                }
+            });
+
+            // Cash Flow Trend Chart
+            const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
+            charts.cashFlowChart = new Chart(cashFlowCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: 'Closing Cash Balance',
+                        data: [50000, 75000, 60000, 90000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                }
+            });
+
+            // Expense Categories Breakdown Chart
+            const expenseCategoriesCtx = document.getElementById('expenseCategoriesChart').getContext('2d');
+            charts.expenseCategoriesChart = new Chart(expenseCategoriesCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Salaries', 'Rent', 'Utilities', 'Marketing', 'Supplies'],
+                    datasets: [{
+                        label: 'Expenses by Category',
+                        data: [45000, 15000, 5000, 10000, 8000],
+                        backgroundColor: ['#1e40af', '#0ea5e9', '#059669', '#d97706', '#dc2626'],
+                        hoverOffset: 4
+                    }]
+                }
+            });
+        }
+        
+        /**
+         * Toggles the visibility of a chart.
+         * @param {string} chartId - The ID of the chart to toggle.
+         */
+        function toggleChart(chartId) {
+            const wrapper = document.getElementById(`${chartId}-wrapper`);
+            const button = document.querySelector(`.chart-toggle-btn[data-chart="${chartId}"]`);
+            if (wrapper) {
+                wrapper.classList.toggle('hidden');
+                button.classList.toggle('active');
+            }
+        }
+
+        /**
+         * Removes a chart from the DOM.
+         * @param {string} chartId - The ID of the chart to remove.
+         */
+        function removeChart(chartId) {
+            const wrapper = document.getElementById(`${chartId}-wrapper`);
+            if (wrapper) {
+                wrapper.remove();
+                // Deactivate the corresponding toggle button
+                const button = document.querySelector(`.chart-toggle-btn[data-chart="${chartId}"]`);
+                if (button) {
+                    button.classList.remove('active');
+                    button.remove();
+                }
+                // Destroy the Chart.js instance to free up memory
+                if (charts[chartId]) {
+                    charts[chartId].destroy();
+                    delete charts[chartId];
+                }
+            }
+        }
+
+        /**
+         * Shows the modal for adding a new custom chart.
+         */
+        function showAddChartModal() {
+            const modal = document.getElementById('addChartModal');
+            modal.style.display = 'flex';
+        }
+
+        /**
+         * Adds a custom chart to the dashboard.
+         */
+        function addCustomChart() {
+            const chartType = document.getElementById('chartType').value;
+            const chartTitle = document.getElementById('chartTitle').value;
+            if (!chartTitle) {
+                showMessage('Please enter a chart title.');
+                return;
+            }
+
+            const chartId = chartTitle.replace(/\s+/g, '-').toLowerCase();
+
+            // Create the HTML for the new chart
+            const chartHtml = `
+                <div class="glass-card rounded-2xl p-6 shadow-xl chart-container-wrapper" id="${chartId}-wrapper">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">${chartTitle}</h3>
+                        <button onclick="removeChart('${chartId}')" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="${chartId}"></canvas>
+                    </div>
+                </div>
+            `;
+            document.getElementById('chartsGrid').insertAdjacentHTML('beforeend', chartHtml);
+            
+            // Create a new toggle button
+            const buttonHtml = `
+                <button onclick="toggleChart('${chartId}')" class="chart-toggle-btn active" data-chart="${chartId}">
+                    <i class="fas fa-plus mr-2"></i>${chartTitle}
+                </button>
+            `;
+            document.getElementById('chartToggleButtons').insertAdjacentHTML('beforeend', buttonHtml);
+
+            // Create the new Chart.js instance with dummy data
+            const ctx = document.getElementById(chartId).getContext('2d');
+            charts[chartId] = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: ['Data 1', 'Data 2', 'Data 3'],
+                    datasets: [{
+                        label: chartTitle,
+                        data: [Math.random() * 100, Math.random() * 100, Math.random() * 100],
+                        backgroundColor: ['#1e40af', '#059669', '#dc2626'],
+                    }]
+                }
+            });
+
+            closeModal('addChartModal');
+            document.getElementById('chartTitle').value = '';
+        }
+
+        // --- Event Listeners and Initializers ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            // Close modal functionality
+            document.querySelectorAll('.close-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    const modal = e.target.closest('.modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                };
+            });
+            window.onclick = (event) => {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            };
+        });
+    </script>
+</body>
+</html>
