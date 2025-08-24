@@ -715,7 +715,6 @@
         </div>
     </div>
 
-
     <!-- JavaScript for functionality -->
     <script>
         // In-memory data store for the application
@@ -735,9 +734,9 @@
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         });
-        
+
         // --- Core App Functions ---
-        
+
         /**
          * Initializes the application by loading data and rendering initial state.
          */
@@ -833,48 +832,86 @@
                     try {
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
-                        // Assuming the first sheet contains all data to be parsed
-                        const sheetName = workbook.SheetNames[0];
+                        const sheetName = 'Project Profile'; // Assumes a sheet named "Project Profile"
                         const worksheet = workbook.Sheets[sheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        if (!worksheet) {
+                            showMessage('Sheet "Project Profile" not found. Importing generic transaction data instead.');
+                            const genericSheet = workbook.SheetNames[0];
+                            const genericData = XLSX.utils.sheet_to_json(workbook.Sheets[genericSheet], { header: 1 });
+                             // Basic parsing logic based on a simple row-by-row structure
+                            if (genericData.length > 1) {
+                                // Clear existing data for demonstration
+                                appData.transactions = [];
 
-                        // Basic parsing logic based on a simple row-by-row structure
-                        // This needs to be highly customized to match your specific Excel layout
-                        if (jsonData.length > 1) {
-                            // Clear existing data for demonstration
-                            appData.transactions = [];
-                            appData.projects = [];
-                            
-                            // Example of parsing simple data from a structured sheet
-                            const headers = jsonData[0];
-                            const rows = jsonData.slice(1);
-                            
-                            // Let's assume a simple transaction list for now
-                            const dateIndex = headers.findIndex(h => h.trim() === 'Date');
-                            const descriptionIndex = headers.findIndex(h => h.trim() === 'Description');
-                            const categoryIndex = headers.findIndex(h => h.trim() === 'Category');
-                            const amountIndex = headers.findIndex(h => h.trim() === 'Amount (₱)');
-                            const typeIndex = headers.findIndex(h => h.trim() === 'Type');
+                                // Example of parsing simple data from a structured sheet
+                                const headers = genericData[0];
+                                const rows = genericData.slice(1);
 
-                            rows.forEach(row => {
-                                if (row[dateIndex] && row[amountIndex]) {
-                                    appData.transactions.push({
-                                        date: row[dateIndex],
-                                        description: row[descriptionIndex],
-                                        category: row[categoryIndex],
-                                        amount: parseFloat(row[amountIndex]),
-                                        type: row[typeIndex],
-                                    });
-                                }
-                            });
-                            showMessage('Excel data imported successfully!');
-                            initApp(); // Re-render the app with new data
-                        } else {
-                            showMessage('Excel file is empty or has an invalid format.');
+                                // Let's assume a simple transaction list for now
+                                const dateIndex = headers.findIndex(h => h.trim() === 'Date');
+                                const descriptionIndex = headers.findIndex(h => h.trim() === 'Description');
+                                const categoryIndex = headers.findIndex(h => h.trim() === 'Category');
+                                const amountIndex = headers.findIndex(h => h.trim() === 'Amount (₱)');
+                                const typeIndex = headers.findIndex(h => h.trim() === 'Type');
+
+                                rows.forEach(row => {
+                                    if (row[dateIndex] && row[amountIndex]) {
+                                        appData.transactions.push({
+                                            date: row[dateIndex],
+                                            description: row[descriptionIndex],
+                                            category: row[categoryIndex],
+                                            amount: parseFloat(row[amountIndex]),
+                                            type: row[typeIndex],
+                                        });
+                                    }
+                                });
+                                showMessage('Excel data imported successfully!');
+                                initApp(); // Re-render the app with new data
+                            } else {
+                                showMessage('Excel file is empty or has an invalid format.');
+                            }
+
+                            return;
                         }
+                        
+                        // Parse project profile data
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        const headers = jsonData[0];
+                        const rows = jsonData.slice(1);
+
+                        const projectData = rows.map(row => {
+                            const project = {};
+                            headers.forEach((header, index) => {
+                                // Map the column headers to the project object keys
+                                const key = header.replace(/\s+/g, '').replace(/[^\w]/g, ''); // Clean header
+                                project[key] = row[index];
+                            });
+                            return project;
+                        });
+
+                        appData.projects = projectData.map(p => ({
+                            projectId: p.ProjectID || 'N/A',
+                            status: p.Status || 'N/A',
+                            clientName: p.ClientName || 'N/A',
+                            projectName: p.ProjectName || 'N/A',
+                            projectType: p.ProjectType || 'N/A',
+                            location: p.Location || 'N/A',
+                            startDate: p.StartDate || 'N/A',
+                            duration: p.Duration || 'N/A',
+                            endDate: p.EndDate || 'N/A',
+                            contractAmount: parseFloat(p.ContractAmount) || 0,
+                            profit: parseFloat(p.Profit) || 0,
+                            approvedBudget: parseFloat(p.ApprovedBudget) || 0,
+                            marginPercent: parseFloat(p.Margin) || 0,
+                            projectRevenue: parseFloat(p.ProjectRevenue) || 0,
+                            projectCost: parseFloat(p.ProjectCost) || 0
+                        }));
+
+                        showMessage('Project Profile data imported successfully!');
+                        initApp(); // Re-render the app with new data
                     } catch (error) {
                         console.error("Error importing file:", error);
-                        showMessage('Error importing file. Please check the file format.');
+                        showMessage('Error importing file. Please check the file format or sheet name.');
                     }
                 };
                 reader.readAsArrayBuffer(file);
@@ -910,6 +947,15 @@
                     XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(transactionsSheet), "Transactions");
                 }
 
+                // Create a projects sheet
+                if (appData.projects.length > 0) {
+                    const projectHeaders = ['Project ID', 'Status', 'Client Name', 'Project Name', 'Project Type', 'Location', 'Start Date', 'Duration', 'End Date', 'Contract Amount', 'Profit', 'Approved Budget', 'Margin %', 'Project Revenue', 'Project Cost'];
+                    const projectData = appData.projects.map(p => [
+                        p.projectId, p.status, p.clientName, p.projectName, p.projectType, p.location, p.startDate, p.duration, p.endDate, p.contractAmount, p.profit, p.approvedBudget, p.marginPercent, p.projectRevenue, p.projectCost
+                    ]);
+                    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([projectHeaders, ...projectData]), "Project Profile");
+                }
+
                 // Create a reference table sheet (example)
                 if (appData.coa.length > 0) {
                     const coaSheet = [
@@ -941,19 +987,25 @@
                 const card = document.createElement('div');
                 card.classList.add('glass-card', 'rounded-xl', 'p-6', 'shadow-lg');
                 card.innerHTML = `
-                    <div class="mb-4">
-                        <h4 class="text-xl font-bold text-gray-800">${project.projectName}</h4>
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-xl font-bold text-gray-800"
+                            data-field="projectName"
+                            data-index="${index}"
+                            onclick="editField(this)">
+                            ${project.projectName}
+                        </h4>
+                        <i class="fas fa-edit text-gray-400"></i>
                     </div>
 
                     <!-- Section 1: Project Information -->
                     <div class="mb-4 border-b border-gray-200 pb-4">
                         <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Project Information</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
-                            <div class="flex items-center"><i class="fas fa-id-card-alt mr-2 text-primary"></i> <strong>ID:</strong> ${project.projectId}</div>
-                            <div class="flex items-center"><i class="fas fa-info-circle mr-2 text-primary"></i> <strong>Status:</strong> ${project.status}</div>
-                            <div class="flex items-center"><i class="fas fa-user-circle mr-2 text-primary"></i> <strong>Client Name:</strong> ${project.clientName}</div>
-                            <div class="flex items-center"><i class="fas fa-tag mr-2 text-primary"></i> <strong>Project Type:</strong> ${project.projectType}</div>
-                            <div class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-primary"></i> <strong>Location:</strong> ${project.location}</div>
+                            <div class="flex items-center"><i class="fas fa-id-card-alt mr-2 text-primary"></i> <strong>ID:</strong> <span class="editable-field" data-field="projectId" data-index="${index}" onclick="editField(this)">${project.projectId}</span></div>
+                            <div class="flex items-center"><i class="fas fa-info-circle mr-2 text-primary"></i> <strong>Status:</strong> <span class="editable-field" data-field="status" data-index="${index}" onclick="editField(this)">${project.status}</span></div>
+                            <div class="flex items-center"><i class="fas fa-user-circle mr-2 text-primary"></i> <strong>Client Name:</strong> <span class="editable-field" data-field="clientName" data-index="${index}" onclick="editField(this)">${project.clientName}</span></div>
+                            <div class="flex items-center"><i class="fas fa-tag mr-2 text-primary"></i> <strong>Project Type:</strong> <span class="editable-field" data-field="projectType" data-index="${index}" onclick="editField(this)">${project.projectType}</span></div>
+                            <div class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-primary"></i> <strong>Location:</strong> <span class="editable-field" data-field="location" data-index="${index}" onclick="editField(this)">${project.location}</span></div>
                         </div>
                     </div>
 
@@ -961,9 +1013,9 @@
                     <div class="mb-4 border-b border-gray-200 pb-4">
                         <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Timeline</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
-                            <div class="flex items-center"><i class="fas fa-calendar-alt mr-2 text-primary"></i> <strong>Start Date:</strong> ${project.startDate}</div>
-                            <div class="flex items-center"><i class="fas fa-clock mr-2 text-primary"></i> <strong>Duration:</strong> ${project.duration}</div>
-                            <div class="flex items-center"><i class="fas fa-calendar-check mr-2 text-primary"></i> <strong>End Date:</strong> ${project.endDate}</div>
+                            <div class="flex items-center"><i class="fas fa-calendar-alt mr-2 text-primary"></i> <strong>Start Date:</strong> <span class="editable-field" data-field="startDate" data-index="${index}" onclick="editField(this)">${project.startDate}</span></div>
+                            <div class="flex items-center"><i class="fas fa-clock mr-2 text-primary"></i> <strong>Duration:</strong> <span class="editable-field" data-field="duration" data-index="${index}" onclick="editField(this)">${project.duration}</span></div>
+                            <div class="flex items-center"><i class="fas fa-calendar-check mr-2 text-primary"></i> <strong>End Date:</strong> <span class="editable-field" data-field="endDate" data-index="${index}" onclick="editField(this)">${project.endDate}</span></div>
                         </div>
                     </div>
 
@@ -971,18 +1023,64 @@
                     <div class="mb-4">
                         <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Financial Summary</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
-                            <div class="flex items-center"><i class="fas fa-file-invoice-dollar mr-2 text-success"></i> <strong>Contract Amount:</strong> ${currencyFormatter.format(project.contractAmount)}</div>
-                            <div class="flex items-center"><i class="fas fa-chart-line mr-2 text-success"></i> <strong>Profit:</strong> ${currencyFormatter.format(project.profit)}</div>
-                            <div class="flex items-center"><i class="fas fa-piggy-bank mr-2 text-secondary"></i> <strong>Approved Budget:</strong> ${currencyFormatter.format(project.approvedBudget)}</div>
-                            <div class="flex items-center"><i class="fas fa-percentage mr-2 text-secondary"></i> <strong>Margin %:</strong> ${project.marginPercent}%</div>
-                            <div class="flex items-center"><i class="fas fa-hand-holding-usd mr-2 text-accent"></i> <strong>Project Revenue:</strong> ${currencyFormatter.format(project.projectRevenue)}</div>
-                            <div class="flex items-center"><i class="fas fa-wallet mr-2 text-danger"></i> <strong>Project Cost:</strong> ${currencyFormatter.format(project.projectCost)}</div>
+                            <div class="flex items-center"><i class="fas fa-file-invoice-dollar mr-2 text-success"></i> <strong>Contract Amount:</strong> <span class="editable-field" data-field="contractAmount" data-index="${index}" data-type="number" onclick="editField(this)">${currencyFormatter.format(project.contractAmount)}</span></div>
+                            <div class="flex items-center"><i class="fas fa-chart-line mr-2 text-success"></i> <strong>Profit:</strong> <span class="editable-field" data-field="profit" data-index="${index}" data-type="number" onclick="editField(this)">${currencyFormatter.format(project.profit)}</span></div>
+                            <div class="flex items-center"><i class="fas fa-piggy-bank mr-2 text-secondary"></i> <strong>Approved Budget:</strong> <span class="editable-field" data-field="approvedBudget" data-index="${index}" data-type="number" onclick="editField(this)">${currencyFormatter.format(project.approvedBudget)}</span></div>
+                            <div class="flex items-center"><i class="fas fa-percentage mr-2 text-secondary"></i> <strong>Margin %:</strong> <span class="editable-field" data-field="marginPercent" data-index="${index}" data-type="number" onclick="editField(this)">${project.marginPercent}%</span></div>
+                            <div class="flex items-center"><i class="fas fa-hand-holding-usd mr-2 text-accent"></i> <strong>Project Revenue:</strong> <span class="editable-field" data-field="projectRevenue" data-index="${index}" data-type="number" onclick="editField(this)">${currencyFormatter.format(project.projectRevenue)}</span></div>
+                            <div class="flex items-center"><i class="fas fa-wallet mr-2 text-danger"></i> <strong>Project Cost:</strong> <span class="editable-field" data-field="projectCost" data-index="${index}" data-type="number" onclick="editField(this)">${currencyFormatter.format(project.projectCost)}</span></div>
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
+
+        /**
+         * Makes a field on a project card editable.
+         * @param {HTMLElement} element - The element to make editable.
+         */
+        function editField(element) {
+            const index = element.dataset.index;
+            const field = element.dataset.field;
+            const type = element.dataset.type || 'text';
+            const originalValue = appData.projects[index][field];
+            const displayValue = element.textContent.trim();
+
+            const input = document.createElement('input');
+            input.type = type;
+            input.value = (type === 'number') ? originalValue : originalValue;
+            input.classList.add('w-full', 'px-2', 'py-1', 'border', 'rounded-md', 'focus:outline-none', 'focus:ring-2', 'focus:ring-primary', 'transition-all');
+            input.style.minWidth = '50px';
+
+            element.replaceWith(input);
+            input.focus();
+
+            input.addEventListener('blur', () => {
+                let newValue = input.value;
+                if (type === 'number') {
+                    newValue = parseFloat(newValue) || 0;
+                }
+
+                appData.projects[index][field] = newValue;
+                const newSpan = document.createElement('span');
+                newSpan.classList.add('editable-field');
+                newSpan.dataset.field = field;
+                newSpan.dataset.index = index;
+                newSpan.dataset.type = type;
+                newSpan.onclick = () => editField(newSpan);
+                newSpan.textContent = (type === 'number') ? currencyFormatter.format(newValue) : newValue;
+                input.replaceWith(newSpan);
+                updateMetrics();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    input.blur();
+                }
+            });
+        }
+
 
         /**
          * Adds a new project card with placeholder data.
