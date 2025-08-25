@@ -1,288 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Prospira Accounting Dashboard (Vue Starter)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f5f6fa;
-      color: #222;
-    }
-    .container {
-      display: flex;
-      min-height: 100vh;
-    }
-    .sidebar {
-      width: 240px;
-      background: linear-gradient(180deg, #2c3e50 70%, #34495e 100%);
-      color: #fff;
-      padding: 0;
-      box-shadow: 2px 0 8px rgba(44,62,80,0.04);
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar h2 {
-      margin: 26px 0 10px 24px;
-      font-size: 1.18rem;
-      letter-spacing: 1px;
-    }
-    .sidebar-group {
-      margin-bottom: 28px;
-    }
-    .sidebar ul {
-      list-style: none;
-      padding: 0 0 0 24px;
-      margin: 0;
-    }
-    .sidebar li {
-      padding: 8px 0;
-      cursor: pointer;
-      font-size: 1rem;
-      opacity: 0.86;
-      transition: background 0.2s, opacity 0.2s;
-    }
-    .sidebar li.active,
-    .sidebar li:hover {
-      background: #1abc9c;
-      color: #fff;
-      opacity: 1;
-      border-radius: 4px;
-      padding-left: 12px;
-    }
-    .main {
-      flex: 1;
-      padding: 32px 42px;
-      background: #f7fafc;
-      display: flex;
-      flex-direction: column;
-    }
-    .panel {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 14px rgba(44,62,80,0.08);
-      padding: 28px 24px;
-      margin-bottom: 24px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .panel-title {
-      margin: 0 0 22px 0;
-      font-size: 1.35rem;
-      font-weight: 600;
-      color: #333;
-      letter-spacing: 1px;
-    }
-    .actions {
-      margin-bottom: 18px;
-    }
-    .actions button {
-      margin-right: 10px;
-      background: #1abc9c;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 7px 18px;
-      font-size: 0.98rem;
-      cursor: pointer;
-      transition: background 0.18s;
-    }
-    .actions button:hover {
-      background: #16a085;
-    }
-    table.dashboard-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fcfcfc;
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(44,62,80,0.05);
-    }
-    table.dashboard-table th,
-    table.dashboard-table td {
-      padding: 12px 10px;
-      border-bottom: 1px solid #eaecee;
-      font-size: 1rem;
-    }
-    table.dashboard-table th {
-      background: #f0f4f8;
-      color: #1abc9c;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      border-bottom: 2px solid #1abc9c;
-    }
-    table.dashboard-table tr:last-child td {
-      border-bottom: none;
-    }
-    table.dashboard-table td.editable {
-      background: #f9f9fc;
-      cursor: pointer;
-    }
-    table.dashboard-table td.actions {
-      text-align: center;
-    }
-    .summary-row {
-      background: #f7f7fa;
-      font-weight: 600;
-      color: #16a085;
-    }
-    @media (max-width: 900px) {
-      .main { padding: 16px 6px; }
-      .panel { padding: 12px 6px; }
-      .sidebar { width: 56px; }
-      .sidebar h2, .sidebar ul, .sidebar li { font-size: 0.85rem; }
-    }
-  </style>
+    <title>Vue Dashboard</title>
 </head>
 <body>
-<div id="app"></div>
-<script>
-const { createApp, ref } = Vue
-
-createApp({
-  setup() {
-    // Sidebar structure: adapt to your actual tabs/groups
-    const sidebarGroups = [
-      {
-        heading: "Finance",
-        tabs: ["Summary", "Trends", "Cash Flow", "Balance Sheet", "Income Statement", "Budget", "Forecast"]
-      },
-      {
-        heading: "Prospira",
-        tabs: ["Client Pipeline", "Leads", "Conversion", "CRM", "Sales", "Opportunities"]
-      },
-      {
-        heading: "Settings",
-        tabs: ["Template Layout", "Appearance", "Import/Export", "User Preferences"]
-      }
-    ];
-    // Track active tab (group+tab)
-    const activeGroupIdx = ref(0);
-    const activeTabIdx = ref(0);
-
-    // Table data examples (static for now)
-    const financeTable = [
-      { category: "Marketing", planned: 2000, actual: 1800, variance: -200 },
-      { category: "Operations", planned: 1200, actual: 1250, variance: 50 },
-      { category: "Salaries", planned: 4000, actual: 4000, variance: 0 }
-    ];
-    const financeSummary = { planned: 7200, actual: 7050, variance: -150 };
-
-    const pipelineTable = [
-      { name: "Acme Corp", status: "Contacted", value: 5000, probability: "75%" },
-      { name: "Beta LLC", status: "Qualified", value: 3500, probability: "60%" },
-      { name: "Gamma Inc", status: "Proposal Sent", value: 7200, probability: "40%" }
-    ];
-    const pipelineSummary = { value: 15700 };
-
-    // Render panel content based on active tab
-    function getPanel() {
-      const group = sidebarGroups[activeGroupIdx.value];
-      const tab = group.tabs[activeTabIdx.value];
-      // Finance
-      if (group.heading === "Finance") {
-        return {
-          title: tab,
-          table: financeTable,
-          summary: financeSummary,
-          columns: [
-            { key: "category", label: "Category" },
-            { key: "planned", label: "Planned" },
-            { key: "actual", label: "Actual" },
-            { key: "variance", label: "Variance" }
-          ]
-        }
-      }
-      // Prospira
-      if (group.heading === "Prospira") {
-        return {
-          title: tab,
-          table: pipelineTable,
-          summary: pipelineSummary,
-          columns: [
-            { key: "name", label: "Lead Name" },
-            { key: "status", label: "Status" },
-            { key: "value", label: "Value" },
-            { key: "probability", label: "Conversion Probability" }
-          ]
-        }
-      }
-      // Settings
-      return {
-        title: tab,
-        table: [],
-        summary: {},
-        columns: []
-      }
-    }
-
-    return {
-      sidebarGroups,
-      activeGroupIdx,
-      activeTabIdx,
-      getPanel
-    }
-  },
-  template: `
-  <div class="container">
-    <nav class="sidebar">
-      <div v-for="(group, gIdx) in sidebarGroups" class="sidebar-group" :key="group.heading">
-        <h2>{{ group.heading }}</h2>
+    <nav>
         <ul>
-          <li v-for="(tab, tIdx) in group.tabs"
-            :key="tab"
-            :class="{ active: activeGroupIdx === gIdx && activeTabIdx === tIdx }"
-            @click="activeGroupIdx = gIdx; activeTabIdx = tIdx"
-          >{{ tab }}</li>
+            <li>Project Profile</li>
+            <li>Transaction Masters</li>
+            <li>Collections Master</li>
+            <li>Reference Table</li>
+            <li>Project Revenue</li>
+            <li>Project Cost</li>
+            <li>Budget vs Actual</li>
+            <li>Overhead Summary</li>
+            <li>Profit & Loss</li>
+            <li>Balance Sheet</li>
+            <li>Cash Flow Statement</li>
+            <li>Accounts Receivable</li>
+            <li>Accounts Payable</li>
+            <li>General Ledger</li>
+            <li>Trial Balance</li>
+            <li>Journal Entries</li>
+            <li>Fixed Assets</li>
+            <li>Owners' Capital</li>
+            <li>Owners' Liability</li>
+            <li>Financial Reports</li>
         </ul>
-      </div>
     </nav>
-    <main class="main">
-      <section class="panel" v-if="getPanel().columns.length">
-        <div class="panel-title">{{ getPanel().title }}</div>
-        <div class="actions">
-          <button>Import</button>
-          <button>Export</button>
-          <button>Hide Column</button>
-          <button>Remove Row</button>
-        </div>
-        <table class="dashboard-table">
-          <thead>
-            <tr>
-              <th v-for="col in getPanel().columns" :key="col.key">{{ col.label }}</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, rIdx) in getPanel().table" :key="rIdx">
-              <td v-for="col in getPanel().columns" :key="col.key" class="editable">{{ row[col.key] }}</td>
-              <td class="actions">
-                <button title="Hide Column">&#128065;</button>
-                <button title="Remove Row">&#10006;</button>
-              </td>
-            </tr>
-            <tr class="summary-row" v-if="getPanel().summary && getPanel().columns.length">
-              <td v-for="col in getPanel().columns" :key="col.key">
-                <template v-if="col.key === 'category' || col.key === 'name'">Total</template>
-                <template v-else>{{ getPanel().summary[col.key] || (col.key === 'value' ? '$' + getPanel().summary.value : '') }}</template>
-              </td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-      <section class="panel" v-else>
-        <div class="panel-title">{{ getPanel().title }}</div>
-        <div style="color:#888; padding:40px; text-align:center;">Settings panel content goes here.</div>
-      </section>
-    </main>
-  </div>
-  `
-}).mount("#app")
-</script>
+    <div id="app">
+        <!-- Vue app will mount here -->
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script>
+        // Vue instance can be initialized here
+    </script>
 </body>
 </html>
