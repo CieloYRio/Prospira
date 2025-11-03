@@ -1,39 +1,3009 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Vue Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceFlow Pro - Modern Finance Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+        }
+        
+        .gradient-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        
+        .gradient-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .gradient-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .gradient-info {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        }
+        
+        .gradient-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .table-row {
+            transition: all 0.2s ease;
+        }
+        
+        .table-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: scale(1.01);
+        }
+        
+        .tab-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab-button.active {
+            border-bottom-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
 </head>
-<body>
-    <nav>
-        <ul>
-            <li>Project Profile</li>
-            <li>Transaction Masters</li>
-            <li>Collections Master</li>
-            <li>Reference Table</li>
-            <li>Project Revenue</li>
-            <li>Project Cost</li>
-            <li>Budget vs Actual</li>
-            <li>Overhead Summary</li>
-            <li>Profit & Loss</li>
-            <li>Balance Sheet</li>
-            <li>Cash Flow Statement</li>
-            <li>Accounts Receivable</li>
-            <li>Accounts Payable</li>
-            <li>General Ledger</li>
-            <li>Trial Balance</li>
-            <li>Journal Entries</li>
-            <li>Fixed Assets</li>
-            <li>Owners' Capital</li>
-            <li>Owners' Liability</li>
-            <li>Financial Reports</li>
-        </ul>
-    </nav>
-    <div id="app">
-        <!-- Vue app will mount here -->
+<body class="gradient-bg min-h-screen">
+    <!-- Sidebar -->
+    <div class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white p-6 z-50 border-r border-slate-700">
+        <div class="flex items-center mb-8">
+            <div class="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center mr-3">
+                <span class="text-xl font-bold">₱</span>
+            </div>
+            <h1 class="text-xl font-bold">FinanceFlow Pro</h1>
+        </div>
+        
+        <nav class="space-y-2">
+            <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 px-3">Dashboard</div>
+            <div class="sidebar-item active p-3 rounded-lg cursor-pointer" onclick="showSection('dashboard')">
+                <span class="text-sm font-medium">📊 Overview</span>
+            </div>
+            
+            <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">Data Entry</div>
+            <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showSection('data-entry')">
+                <span class="text-sm font-medium">📝 Transactions & Projects</span>
+            </div>
+            
+            <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">Accounting</div>
+            <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showSection('accounting')">
+                <span class="text-sm font-medium">📚 Ledger & Control</span>
+            </div>
+            
+            <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">Analysis</div>
+            <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showSection('analysis')">
+                <span class="text-sm font-medium">📈 Project Analysis</span>
+            </div>
+            
+            <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 px-3 mt-6">Reports</div>
+            <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showSection('statements')">
+                <span class="text-sm font-medium">📋 Financial Statements</span>
+            </div>
+            <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showSection('assets-equity')">
+                <span class="text-sm font-medium">🏢 Assets & Equity</span>
+            </div>
+            <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showSection('forecast')">
+                <span class="text-sm font-medium">🔮 Forecast</span>
+            </div>
+        </nav>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
+    <!-- Main Content -->
+    <div class="ml-64 p-8 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">Dashboard</h2>
+                <div class="flex space-x-4">
+                    <button class="glass px-4 py-2 rounded-lg text-slate-700 hover-lift" onclick="refreshData()">
+                        🔄 Refresh
+                    </button>
+                    <button class="gradient-primary px-4 py-2 rounded-lg text-white hover-lift" onclick="showModal('addTransaction')">
+                        + Quick Entry
+                    </button>
+                    <button class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-white hover-lift" onclick="exportData()">
+                        📤 Export
+                    </button>
+                    <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white hover-lift" onclick="importData()">
+                        📥 Import
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <div class="glass rounded-xl p-6 hover-lift animate-slide-up">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-600 text-sm">Total Revenue</p>
+                            <p class="text-2xl font-bold text-slate-800" id="totalRevenue">₱2,450,000</p>
+                        </div>
+                        <div class="w-12 h-12 gradient-success rounded-lg flex items-center justify-center">
+                            <span class="text-xl">💰</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-emerald-400 text-sm">+12.5% from last month</span>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 hover-lift animate-slide-up" style="animation-delay: 0.1s">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-600 text-sm">Total Cost</p>
+                            <p class="text-2xl font-bold text-slate-800" id="totalCost">₱1,680,000</p>
+                        </div>
+                        <div class="w-12 h-12 gradient-warning rounded-lg flex items-center justify-center">
+                            <span class="text-xl">💸</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-red-600 text-sm">+8.2% from last month</span>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 hover-lift animate-slide-up" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-600 text-sm">Gross Margin %</p>
+                            <p class="text-2xl font-bold text-slate-800" id="grossMargin">31.4%</p>
+                        </div>
+                        <div class="w-12 h-12 gradient-info rounded-lg flex items-center justify-center">
+                            <span class="text-xl">📊</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-emerald-600 text-sm">+2.1% from last month</span>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 hover-lift animate-slide-up" style="animation-delay: 0.3s">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-600 text-sm">Net Profit</p>
+                            <p class="text-2xl font-bold text-slate-800" id="netProfit">₱520,000</p>
+                        </div>
+                        <div class="w-12 h-12 gradient-primary rounded-lg flex items-center justify-center">
+                            <span class="text-xl">🎯</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-emerald-600 text-sm">+15.3% from last month</span>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 hover-lift animate-slide-up" style="animation-delay: 0.4s">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-600 text-sm">Cash Balance</p>
+                            <p class="text-2xl font-bold text-slate-800" id="cashBalance">₱890,000</p>
+                        </div>
+                        <div class="w-12 h-12 gradient-success rounded-lg flex items-center justify-center">
+                            <span class="text-xl">🏦</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-emerald-600 text-sm">+5.7% from last month</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="glass rounded-xl p-6 hover-lift">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Revenue vs Net Profit (Monthly)</h3>
+                    <div class="chart-container bg-white rounded-lg p-4">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 hover-lift">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Cash Flow Trend (Inflows vs Outflows)</h3>
+                    <div class="chart-container bg-white rounded-lg p-4">
+                        <canvas id="cashFlowChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass rounded-xl p-6 hover-lift">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Top Profitable Projects</h3>
+                    <div class="chart-container bg-white rounded-lg p-4">
+                        <canvas id="projectsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 hover-lift">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Overhead Distribution by Category</h3>
+                    <div class="chart-container bg-white rounded-lg p-4">
+                        <canvas id="overheadChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 hover-lift">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Quick Links</h3>
+                    <div class="space-y-3">
+                        <button class="w-full bg-slate-700 hover:bg-slate-600 p-3 rounded-lg text-white hover-lift text-left" onclick="showSection('analysis')">
+                            📁 Project Profile
+                        </button>
+                        <button class="w-full bg-slate-700 hover:bg-slate-600 p-3 rounded-lg text-white hover-lift text-left" onclick="showSection('statements')">
+                            📊 Profit & Loss
+                        </button>
+                        <button class="w-full bg-slate-700 hover:bg-slate-600 p-3 rounded-lg text-white hover-lift text-left" onclick="showSection('statements')">
+                            💰 Cash Flow
+                        </button>
+                        <button class="w-full bg-slate-700 hover:bg-slate-600 p-3 rounded-lg text-white hover-lift text-left" onclick="showSection('accounting')">
+                            📋 Accounts Receivable/Payable
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Entry Section -->
+        <div id="data-entry" class="section hidden">
+            <h2 class="text-3xl font-bold text-slate-800 mb-8">Transactions & Projects</h2>
+            
+            <!-- Tab Navigation -->
+            <div class="flex space-x-4 mb-6">
+                <button class="tab-button active px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200" onclick="showTab('transactions-master')">
+                    💳 Transactions Master
+                </button>
+                <button class="tab-button px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200" onclick="showTab('reference-tables')">
+                    📚 Reference Tables
+                </button>
+                <button class="tab-button px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200" onclick="showTab('project-profile')">
+                    📁 Project Profile
+                </button>
+            </div>
+
+            <!-- Transactions Master -->
+            <div id="transactions-master" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Transactions Master</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('addTransaction')">
+                            + Add
+                        </button>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('transactions')">
+                            📤 Export
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('importData')">
+                            📥 Import
+                        </button>
+                        <button class="bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('pasteData')">
+                            📋 Paste
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700 text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Date</th>
+                                    <th class="text-left p-3 font-semibold">Transaction ID</th>
+                                    <th class="text-left p-3 font-semibold">Type</th>
+                                    <th class="text-left p-3 font-semibold">COA Code</th>
+                                    <th class="text-left p-3 font-semibold">500 Series</th>
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-left p-3 font-semibold">Client/Vendor</th>
+                                    <th class="text-left p-3 font-semibold">Invoice/OR/DR #</th>
+                                    <th class="text-left p-3 font-semibold">Payment Method</th>
+                                    <th class="text-left p-3 font-semibold">Debit</th>
+                                    <th class="text-left p-3 font-semibold">Credit</th>
+                                    <th class="text-left p-3 font-semibold">Notes</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsList">
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2024-12-15</td>
+                                    <td class="p-3">TXN-001</td>
+                                    <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Collection</span></td>
+                                    <td class="p-3">4001</td>
+                                    <td class="p-3">-</td>
+                                    <td class="p-3">PRJ-001</td>
+                                    <td class="p-3">ABC Corp</td>
+                                    <td class="p-3">INV-001</td>
+                                    <td class="p-3">Bank Transfer</td>
+                                    <td class="p-3 text-emerald-600 font-medium">₱250,000</td>
+                                    <td class="p-3">-</td>
+                                    <td class="p-3">Website project payment</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editTransaction('TXN-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteTransaction('TXN-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2024-12-14</td>
+                                    <td class="p-3">TXN-002</td>
+                                    <td class="p-3"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs">Expense</span></td>
+                                    <td class="p-3">5001</td>
+                                    <td class="p-3">✓</td>
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3">Tech Solutions</td>
+                                    <td class="p-3">BILL-001</td>
+                                    <td class="p-3">Cash</td>
+                                    <td class="p-3">-</td>
+                                    <td class="p-3 text-red-600 font-medium">₱85,000</td>
+                                    <td class="p-3">Development tools</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editTransaction('TXN-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteTransaction('TXN-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2.2 Reference Tables -->
+            <div id="reference-tables" class="tab-content">
+                <h3 class="text-2xl font-semibold text-slate-800 mb-6">Reference Tables</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold text-slate-800">Chart of Accounts (BIR-Aligned)</h4>
+                            <div class="flex space-x-2">
+                                <button class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-white text-xs hover-lift" onclick="showModal('addAccount')">
+                                    + Add
+                                </button>
+                                <button class="bg-emerald-600 hover:bg-emerald-700 px-2 py-1 rounded text-white text-xs hover-lift" onclick="exportTable('accounts')">
+                                    📤
+                                </button>
+                                <button class="bg-purple-600 hover:bg-purple-700 px-2 py-1 rounded text-white text-xs hover-lift" onclick="showModal('importData')">
+                                    📥
+                                </button>
+                                <button class="bg-orange-600 hover:bg-orange-700 px-2 py-1 rounded text-white text-xs hover-lift" onclick="showModal('pasteData')">
+                                    📋
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-2 max-h-64 overflow-y-auto">
+                            <div class="flex justify-between items-center p-2 bg-slate-100 rounded text-sm">
+                                <span class="text-slate-800 font-medium">1001 - Cash in Bank</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-slate-600">Assets</span>
+                                    <button class="text-blue-600 hover:text-blue-800" onclick="editAccount('1001')">✏️</button>
+                                    <button class="text-red-600 hover:text-red-800" onclick="deleteAccount('1001')">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-slate-100 rounded text-sm">
+                                <span class="text-slate-800 font-medium">1201 - Accounts Receivable</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-slate-600">Assets</span>
+                                    <button class="text-blue-600 hover:text-blue-800" onclick="editAccount('1201')">✏️</button>
+                                    <button class="text-red-600 hover:text-red-800" onclick="deleteAccount('1201')">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-slate-100 rounded text-sm">
+                                <span class="text-slate-800 font-medium">2001 - Accounts Payable</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-slate-600">Liabilities</span>
+                                    <button class="text-blue-600 hover:text-blue-800" onclick="editAccount('2001')">✏️</button>
+                                    <button class="text-red-600 hover:text-red-800" onclick="deleteAccount('2001')">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-slate-100 rounded text-sm">
+                                <span class="text-slate-800 font-medium">4001 - Service Revenue</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-slate-600">Revenue</span>
+                                    <button class="text-blue-600 hover:text-blue-800" onclick="editAccount('4001')">✏️</button>
+                                    <button class="text-red-600 hover:text-red-800" onclick="deleteAccount('4001')">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-slate-100 rounded text-sm">
+                                <span class="text-slate-800 font-medium">5001 - Project Materials</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-slate-600">Expenses (500 Series)</span>
+                                    <button class="text-blue-600 hover:text-blue-800" onclick="editAccount('5001')">✏️</button>
+                                    <button class="text-red-600 hover:text-red-800" onclick="deleteAccount('5001')">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold text-slate-800">Project Expense Codes (500 Series)</h4>
+                            <div class="flex space-x-2">
+                                <button class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-white text-xs hover-lift" onclick="showModal('addExpenseCode')">
+                                    + Add
+                                </button>
+                                <button class="bg-emerald-600 hover:bg-emerald-700 px-2 py-1 rounded text-white text-xs hover-lift" onclick="exportTable('expense-codes')">
+                                    📤
+                                </button>
+                                <button class="bg-purple-600 hover:bg-purple-700 px-2 py-1 rounded text-white text-xs hover-lift" onclick="showModal('importData')">
+                                    📥
+                                </button>
+                                <button class="bg-orange-600 hover:bg-orange-700 px-2 py-1 rounded text-white text-xs hover-lift" onclick="showModal('pasteData')">
+                                    📋
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-2 max-h-64 overflow-y-auto">
+                            <div class="p-2 bg-slate-100 rounded text-sm">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-slate-800 font-medium">5001 - Direct Materials</div>
+                                        <div class="text-slate-600 text-xs">Materials directly used in projects</div>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <button class="text-blue-600 hover:text-blue-800" onclick="editExpenseCode('5001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteExpenseCode('5001')">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-2 bg-slate-100 rounded text-sm">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-slate-800 font-medium">5002 - Direct Labor</div>
+                                        <div class="text-slate-600 text-xs">Labor costs for specific projects</div>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <button class="text-blue-600 hover:text-blue-800" onclick="editExpenseCode('5002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteExpenseCode('5002')">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-2 bg-slate-100 rounded text-sm">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-slate-800 font-medium">5003 - Subcontractor Fees</div>
+                                        <div class="text-slate-600 text-xs">External contractor payments</div>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <button class="text-blue-600 hover:text-blue-800" onclick="editExpenseCode('5003')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteExpenseCode('5003')">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2.3 Project Profile -->
+            <div id="project-profile" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Project Profile</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('addProject')">
+                            + New Project
+                        </button>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('projects')">
+                            📤 Export
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('importData')">
+                            📥 Import
+                        </button>
+                        <button class="bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('pasteData')">
+                            📋 Paste
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700 text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-left p-3 font-semibold">Project Name</th>
+                                    <th class="text-left p-3 font-semibold">Type</th>
+                                    <th class="text-left p-3 font-semibold">Location</th>
+                                    <th class="text-left p-3 font-semibold">Client</th>
+                                    <th class="text-left p-3 font-semibold">Start Date</th>
+                                    <th class="text-left p-3 font-semibold">End Date</th>
+                                    <th class="text-left p-3 font-semibold">Status</th>
+                                    <th class="text-left p-3 font-semibold">Contract Value</th>
+                                    <th class="text-left p-3 font-semibold">Project Manager</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-001</td>
+                                    <td class="p-3">Website Redesign</td>
+                                    <td class="p-3">Web Development</td>
+                                    <td class="p-3">Manila</td>
+                                    <td class="p-3">ABC Corp</td>
+                                    <td class="p-3">2024-10-01</td>
+                                    <td class="p-3">2024-12-31</td>
+                                    <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Active</span></td>
+                                    <td class="p-3">₱500,000</td>
+                                    <td class="p-3">John Doe</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editProject('PRJ-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteProject('PRJ-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3">Mobile App Development</td>
+                                    <td class="p-3">Mobile Development</td>
+                                    <td class="p-3">Cebu</td>
+                                    <td class="p-3">XYZ Ltd</td>
+                                    <td class="p-3">2024-11-01</td>
+                                    <td class="p-3">2025-03-31</td>
+                                    <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">In Progress</span></td>
+                                    <td class="p-3">₱750,000</td>
+                                    <td class="p-3">Jane Smith</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editProject('PRJ-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteProject('PRJ-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounting & Control Section -->
+        <div id="accounting" class="section hidden">
+            <h2 class="text-3xl font-bold text-slate-800 mb-8">Ledger & Control</h2>
+            
+            <!-- Tab Navigation -->
+            <div class="flex space-x-4 mb-6 flex-wrap">
+                <button class="tab-button active px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200 mb-2" onclick="showTab('general-ledger')">
+                    📊 General Ledger
+                </button>
+                <button class="tab-button px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200 mb-2" onclick="showTab('trial-balance')">
+                    ⚖️ Trial Balance
+                </button>
+                <button class="tab-button px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200 mb-2" onclick="showTab('accounts-payable')">
+                    💳 Accounts Payable
+                </button>
+                <button class="tab-button px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200 mb-2" onclick="showTab('accounts-receivable')">
+                    💰 Accounts Receivable
+                </button>
+            </div>
+
+            <!-- General Ledger -->
+            <div id="general-ledger" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">General Ledger</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('addLedgerEntry')">
+                            + Add Entry
+                        </button>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('ledger')">
+                            📤 Export
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('importData')">
+                            📥 Import
+                        </button>
+                        <button class="bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('pasteData')">
+                            📋 Paste
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700 text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Date</th>
+                                    <th class="text-left p-3 font-semibold">Account Code</th>
+                                    <th class="text-left p-3 font-semibold">Account Name</th>
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-left p-3 font-semibold">Description</th>
+                                    <th class="text-right p-3 font-semibold">Debit</th>
+                                    <th class="text-right p-3 font-semibold">Credit</th>
+                                    <th class="text-right p-3 font-semibold">Running Balance</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2024-12-15</td>
+                                    <td class="p-3">1001</td>
+                                    <td class="p-3">Cash in Bank</td>
+                                    <td class="p-3">PRJ-001</td>
+                                    <td class="p-3">Payment received from ABC Corp</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱250,000</td>
+                                    <td class="p-3 text-right">-</td>
+                                    <td class="p-3 text-right font-medium">₱890,000</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editLedgerEntry('LE-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteLedgerEntry('LE-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2024-12-14</td>
+                                    <td class="p-3">5001</td>
+                                    <td class="p-3">Project Materials</td>
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3">Development tools purchase</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱85,000</td>
+                                    <td class="p-3 text-right">-</td>
+                                    <td class="p-3 text-right font-medium">₱85,000</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editLedgerEntry('LE-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteLedgerEntry('LE-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trial Balance -->
+            <div id="trial-balance" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Trial Balance</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('trial-balance')">
+                            📤 Export
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="refreshTrialBalance()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Account Code</th>
+                                    <th class="text-left p-3 font-semibold">Account Name</th>
+                                    <th class="text-right p-3 font-semibold">Debit Total</th>
+                                    <th class="text-right p-3 font-semibold">Credit Total</th>
+                                    <th class="text-right p-3 font-semibold">Net Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">1001</td>
+                                    <td class="p-3">Cash in Bank</td>
+                                    <td class="p-3 text-right">₱890,000</td>
+                                    <td class="p-3 text-right">-</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱890,000</td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">1201</td>
+                                    <td class="p-3">Accounts Receivable</td>
+                                    <td class="p-3 text-right">₱430,000</td>
+                                    <td class="p-3 text-right">-</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱430,000</td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2001</td>
+                                    <td class="p-3">Accounts Payable</td>
+                                    <td class="p-3 text-right">-</td>
+                                    <td class="p-3 text-right">₱110,000</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱110,000</td>
+                                </tr>
+                                <tr class="table-row border-t-2 border-blue-500 bg-blue-50">
+                                    <td class="p-3 font-bold">TOTALS</td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3 text-right font-bold">₱1,320,000</td>
+                                    <td class="p-3 text-right font-bold">₱110,000</td>
+                                    <td class="p-3 text-right font-bold">₱1,210,000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accounts Payable -->
+            <div id="accounts-payable" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Accounts Payable</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('addPayable')">
+                            + Add Bill
+                        </button>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('payables')">
+                            📤 Export
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('importData')">
+                            📥 Import
+                        </button>
+                        <button class="bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('pasteData')">
+                            📋 Paste
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Vendor</th>
+                                    <th class="text-left p-3 font-semibold">Invoice No.</th>
+                                    <th class="text-left p-3 font-semibold">Due Date</th>
+                                    <th class="text-right p-3 font-semibold">Amount</th>
+                                    <th class="text-center p-3 font-semibold">Status</th>
+                                    <th class="text-right p-3 font-semibold">Balance</th>
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">Tech Solutions</td>
+                                    <td class="p-3">BILL-001</td>
+                                    <td class="p-3">Dec 18, 2024</td>
+                                    <td class="p-3 text-right">₱85,000</td>
+                                    <td class="p-3 text-center"><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Unpaid</span></td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱85,000</td>
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editPayable('BILL-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deletePayable('BILL-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">Office Supplies Co</td>
+                                    <td class="p-3">BILL-002</td>
+                                    <td class="p-3">Dec 22, 2024</td>
+                                    <td class="p-3 text-right">₱25,000</td>
+                                    <td class="p-3 text-center"><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Unpaid</span></td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱25,000</td>
+                                    <td class="p-3">-</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editPayable('BILL-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deletePayable('BILL-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accounts Receivable -->
+            <div id="accounts-receivable" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Accounts Receivable</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('addReceivable')">
+                            + Add Invoice
+                        </button>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('receivables')">
+                            📤 Export
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('importData')">
+                            📥 Import
+                        </button>
+                        <button class="bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('pasteData')">
+                            📋 Paste
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Client</th>
+                                    <th class="text-left p-3 font-semibold">Invoice No.</th>
+                                    <th class="text-left p-3 font-semibold">Due Date</th>
+                                    <th class="text-right p-3 font-semibold">Amount</th>
+                                    <th class="text-center p-3 font-semibold">Status</th>
+                                    <th class="text-right p-3 font-semibold">Balance</th>
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">ABC Corp</td>
+                                    <td class="p-3">INV-001</td>
+                                    <td class="p-3">Dec 20, 2024</td>
+                                    <td class="p-3 text-right">₱250,000</td>
+                                    <td class="p-3 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Collected</span></td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱0</td>
+                                    <td class="p-3">PRJ-001</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editReceivable('INV-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteReceivable('INV-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">XYZ Ltd</td>
+                                    <td class="p-3">INV-002</td>
+                                    <td class="p-3">Dec 25, 2024</td>
+                                    <td class="p-3 text-right">₱180,000</td>
+                                    <td class="p-3 text-center"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs">Uncollected</span></td>
+                                    <td class="p-3 text-right text-amber-600 font-medium">₱180,000</td>
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editReceivable('INV-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteReceivable('INV-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project & Financial Analysis Section -->
+        <div id="analysis" class="section hidden">
+            <h2 class="text-3xl font-bold text-slate-800 mb-8">Project Analysis</h2>
+            
+            <!-- Tab Navigation -->
+            <div class="flex space-x-4 mb-6 flex-wrap">
+                <button class="tab-button active px-3 py-2 rounded-lg bg-white text-slate-700 border border-slate-200 mb-2 text-sm" onclick="showTab('project-revenue')">
+                    💰 Project Revenue
+                </button>
+                <button class="tab-button px-3 py-2 rounded-lg bg-white text-slate-700 border border-slate-200 mb-2 text-sm" onclick="showTab('project-cost')">
+                    💸 Project Cost
+                </button>
+                <button class="tab-button px-3 py-2 rounded-lg bg-white text-slate-700 border border-slate-200 mb-2 text-sm" onclick="showTab('budget-actual')">
+                    📊 Budget vs Actual
+                </button>
+                <button class="tab-button px-3 py-2 rounded-lg bg-white text-slate-700 border border-slate-200 mb-2 text-sm" onclick="showTab('overhead-expenses')">
+                    🏢 Overhead Expenses
+                </button>
+            </div>
+
+            <!-- Project Revenue -->
+            <div id="project-revenue" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Project Revenue</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('project-revenue')">
+                            📤 Export
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="refreshProjectRevenue()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-left p-3 font-semibold">Project Name</th>
+                                    <th class="text-left p-3 font-semibold">Client</th>
+                                    <th class="text-right p-3 font-semibold">Contract Value</th>
+                                    <th class="text-right p-3 font-semibold">Revenue Recognized</th>
+                                    <th class="text-right p-3 font-semibold">Remaining Balance</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-001</td>
+                                    <td class="p-3">Website Redesign</td>
+                                    <td class="p-3">ABC Corp</td>
+                                    <td class="p-3 text-right">₱500,000</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱375,000</td>
+                                    <td class="p-3 text-right text-amber-600 font-medium">₱125,000</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editProjectRevenue('PRJ-001')">✏️</button>
+                                        <button class="text-green-600 hover:text-green-800" onclick="viewProjectDetails('PRJ-001')">👁️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3">Mobile App Development</td>
+                                    <td class="p-3">XYZ Ltd</td>
+                                    <td class="p-3 text-right">₱750,000</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱337,500</td>
+                                    <td class="p-3 text-right text-amber-600 font-medium">₱412,500</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editProjectRevenue('PRJ-002')">✏️</button>
+                                        <button class="text-green-600 hover:text-green-800" onclick="viewProjectDetails('PRJ-002')">👁️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.2 Project Cost -->
+            <div id="project-cost" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Project Cost (Transaction-Level)</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('project-cost')">
+                            📤 Export
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="refreshProjectCost()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700 text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-left p-3 font-semibold">Vendor</th>
+                                    <th class="text-left p-3 font-semibold">Expense Type</th>
+                                    <th class="text-left p-3 font-semibold">Account Code (500 Series)</th>
+                                    <th class="text-left p-3 font-semibold">Account Name</th>
+                                    <th class="text-right p-3 font-semibold">Amount</th>
+                                    <th class="text-left p-3 font-semibold">Date</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-001</td>
+                                    <td class="p-3">Design Studio</td>
+                                    <td class="p-3">Design Services</td>
+                                    <td class="p-3">5003</td>
+                                    <td class="p-3">Subcontractor Fees</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱75,000</td>
+                                    <td class="p-3">2024-12-10</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editProjectCost('PC-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteProjectCost('PC-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3">Tech Solutions</td>
+                                    <td class="p-3">Development Tools</td>
+                                    <td class="p-3">5001</td>
+                                    <td class="p-3">Direct Materials</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱85,000</td>
+                                    <td class="p-3">2024-12-14</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editProjectCost('PC-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteProjectCost('PC-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 mt-6">
+                    <h4 class="text-lg font-semibold text-slate-800 mb-4">Project Cost Summary (Automated)</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-left p-3 font-semibold">Project Name</th>
+                                    <th class="text-left p-3 font-semibold">Month</th>
+                                    <th class="text-right p-3 font-semibold">Total Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-001</td>
+                                    <td class="p-3">Website Redesign</td>
+                                    <td class="p-3">December 2024</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱125,000</td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3">Mobile App Development</td>
+                                    <td class="p-3">December 2024</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱160,000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.3 Budget vs Actual -->
+            <div id="budget-actual" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Budget vs Actual</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('budget-actual')">
+                            📤 Export
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="refreshBudgetActual()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6 mb-6">
+                    <div class="chart-container bg-white rounded-lg p-4">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Project ID</th>
+                                    <th class="text-right p-3 font-semibold">Budgeted Revenue</th>
+                                    <th class="text-right p-3 font-semibold">Budgeted Cost</th>
+                                    <th class="text-right p-3 font-semibold">Actual Revenue</th>
+                                    <th class="text-right p-3 font-semibold">Actual Cost</th>
+                                    <th class="text-right p-3 font-semibold">Variance</th>
+                                    <th class="text-center p-3 font-semibold">% Used</th>
+                                    <th class="text-center p-3 font-semibold">Status</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-001</td>
+                                    <td class="p-3 text-right">₱500,000</td>
+                                    <td class="p-3 text-right">₱350,000</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱375,000</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱285,000</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">+₱90,000</td>
+                                    <td class="p-3 text-center">75%</td>
+                                    <td class="p-3 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">On Track</span></td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editBudget('PRJ-001')">✏️</button>
+                                        <button class="text-green-600 hover:text-green-800" onclick="viewBudgetDetails('PRJ-001')">👁️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">PRJ-002</td>
+                                    <td class="p-3 text-right">₱750,000</td>
+                                    <td class="p-3 text-right">₱525,000</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱337,500</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱285,000</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">+₱52,500</td>
+                                    <td class="p-3 text-center">45%</td>
+                                    <td class="p-3 text-center"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">In Progress</span></td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editBudget('PRJ-002')">✏️</button>
+                                        <button class="text-green-600 hover:text-green-800" onclick="viewBudgetDetails('PRJ-002')">👁️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.4 Overhead Expenses -->
+            <div id="overhead-expenses" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Overhead Expenses (Transaction-Level)</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('addOverhead')">
+                            + Add Expense
+                        </button>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('overhead')">
+                            📤 Export
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('importData')">
+                            📥 Import
+                        </button>
+                        <button class="bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('pasteData')">
+                            📋 Paste
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700 text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Expense Category</th>
+                                    <th class="text-left p-3 font-semibold">Vendor</th>
+                                    <th class="text-left p-3 font-semibold">Account Code</th>
+                                    <th class="text-left p-3 font-semibold">Account Name</th>
+                                    <th class="text-right p-3 font-semibold">Amount</th>
+                                    <th class="text-left p-3 font-semibold">Date</th>
+                                    <th class="text-left p-3 font-semibold">Notes</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">Office Expenses</td>
+                                    <td class="p-3">Office Supplies Co</td>
+                                    <td class="p-3">6001</td>
+                                    <td class="p-3">Office Supplies</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱25,000</td>
+                                    <td class="p-3">2024-12-12</td>
+                                    <td class="p-3">Monthly office supplies</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOverhead('OH-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteOverhead('OH-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">Utilities</td>
+                                    <td class="p-3">Electric Company</td>
+                                    <td class="p-3">6002</td>
+                                    <td class="p-3">Utilities Expense</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱15,000</td>
+                                    <td class="p-3">2024-12-15</td>
+                                    <td class="p-3">December electricity bill</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOverhead('OH-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteOverhead('OH-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 mt-6">
+                    <h4 class="text-lg font-semibold text-slate-800 mb-4">Overhead Summary (Automated)</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Month</th>
+                                    <th class="text-left p-3 font-semibold">Expense Category</th>
+                                    <th class="text-right p-3 font-semibold">Total Overhead</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">December 2024</td>
+                                    <td class="p-3">Office Expenses</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱25,000</td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">December 2024</td>
+                                    <td class="p-3">Utilities</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱15,000</td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">December 2024</td>
+                                    <td class="p-3">Salaries</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱120,000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Statements Section -->
+        <div id="statements" class="section hidden">
+            <h2 class="text-3xl font-bold text-slate-800 mb-8">Financial Statements</h2>
+            
+            <!-- Tab Navigation -->
+            <div class="flex space-x-4 mb-6">
+                <button class="tab-button active px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200" onclick="showTab('profit-loss')">
+                    📊 Profit & Loss
+                </button>
+                <button class="tab-button px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200" onclick="showTab('cash-flow')">
+                    💰 Cash Flow
+                </button>
+                <button class="tab-button px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200" onclick="showTab('balance-sheet')">
+                    ⚖️ Balance Sheet
+                </button>
+            </div>
+
+            <!-- Profit & Loss -->
+            <div id="profit-loss" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Profit & Loss Statement</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('profit-loss')">
+                            📤 Export
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="refreshProfitLoss()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2">
+                            <span class="text-lg font-semibold text-slate-800">REVENUE</span>
+                            <span class="text-lg font-semibold text-emerald-600">₱2,450,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Service Revenue</span>
+                            <span class="text-emerald-600">₱2,450,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2 pt-4">
+                            <span class="text-lg font-semibold text-slate-800">COST OF GOODS SOLD</span>
+                            <span class="text-lg font-semibold text-red-600">₱1,680,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Direct Materials</span>
+                            <span class="text-red-600">₱850,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Direct Labor</span>
+                            <span class="text-red-600">₱580,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Subcontractor Fees</span>
+                            <span class="text-red-600">₱250,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2 pt-4">
+                            <span class="text-lg font-bold text-slate-800">GROSS PROFIT</span>
+                            <span class="text-lg font-bold text-emerald-600">₱770,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2 pt-4">
+                            <span class="text-lg font-semibold text-slate-800">OPERATING EXPENSES</span>
+                            <span class="text-lg font-semibold text-red-600">₱250,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Salaries & Benefits</span>
+                            <span class="text-red-600">₱120,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Rent Expense</span>
+                            <span class="text-red-600">₱50,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Utilities</span>
+                            <span class="text-red-600">₱30,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Marketing</span>
+                            <span class="text-red-600">₱25,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Other Expenses</span>
+                            <span class="text-red-600">₱25,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2 pt-4">
+                            <span class="text-lg font-bold text-slate-800">OPERATING INCOME</span>
+                            <span class="text-lg font-bold text-emerald-600">₱520,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Interest Income</span>
+                            <span class="text-emerald-600">₱5,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Interest Expense</span>
+                            <span class="text-red-600">₱2,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2 pt-4">
+                            <span class="text-lg font-bold text-slate-800">INCOME BEFORE TAXES</span>
+                            <span class="text-lg font-bold text-emerald-600">₱523,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Income Tax Expense</span>
+                            <span class="text-red-600">₱78,450</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-t-2 border-blue-500 pt-4">
+                            <span class="text-xl font-bold text-slate-800">NET PROFIT</span>
+                            <span class="text-xl font-bold text-emerald-600">₱444,550</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5.2 Cash Flow -->
+            <div id="cash-flow" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Cash Flow Statement (Direct Method)</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('cash-flow')">
+                            📤 Export
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="refreshCashFlow()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2">
+                            <span class="text-lg font-semibold text-slate-800">OPERATING ACTIVITIES</span>
+                            <span class="text-lg font-semibold text-blue-600"></span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Cash receipts from customers</span>
+                            <span class="text-emerald-600">₱2,200,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Cash paid to suppliers</span>
+                            <span class="text-red-600">(₱1,500,000)</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Cash paid for operating expenses</span>
+                            <span class="text-red-600">(₱250,000)</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4 border-b border-slate-300 pb-2">
+                            <span class="text-slate-800 font-medium">Net Cash from Operating Activities</span>
+                            <span class="text-emerald-600 font-bold">₱450,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2 pt-4">
+                            <span class="text-lg font-semibold text-slate-800">INVESTING ACTIVITIES</span>
+                            <span class="text-lg font-semibold text-blue-600"></span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Purchase of equipment</span>
+                            <span class="text-red-600">(₱120,000)</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4 border-b border-slate-300 pb-2">
+                            <span class="text-slate-800 font-medium">Net Cash from Investing Activities</span>
+                            <span class="text-red-600 font-bold">(₱120,000)</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2 pt-4">
+                            <span class="text-lg font-semibold text-slate-800">FINANCING ACTIVITIES</span>
+                            <span class="text-lg font-semibold text-blue-600"></span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Owner's capital injection</span>
+                            <span class="text-emerald-600">₱300,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Loan proceeds</span>
+                            <span class="text-emerald-600">₱150,000</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Dividends paid</span>
+                            <span class="text-red-600">(₱100,000)</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Loan repayments</span>
+                            <span class="text-red-600">(₱150,000)</span>
+                        </div>
+                        <div class="flex justify-between items-center pl-4 border-b border-slate-300 pb-2">
+                            <span class="text-slate-800 font-medium">Net Cash from Financing Activities</span>
+                            <span class="text-emerald-600 font-bold">₱200,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-b border-slate-300 pb-2 pt-4">
+                            <span class="text-lg font-bold text-slate-800">NET CASH FLOW</span>
+                            <span class="text-lg font-bold text-emerald-600">₱530,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pl-4">
+                            <span class="text-slate-600">Beginning cash balance</span>
+                            <span class="text-blue-600">₱360,000</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-t-2 border-blue-500 pt-4">
+                            <span class="text-xl font-bold text-slate-800">ENDING CASH BALANCE</span>
+                            <span class="text-xl font-bold text-emerald-600">₱890,000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5.3 Balance Sheet -->
+            <div id="balance-sheet" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Balance Sheet</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('balance-sheet')">
+                            📤 Export
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="refreshBalanceSheet()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Assets -->
+                    <div class="glass rounded-xl p-6">
+                        <h4 class="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-300 pb-2">ASSETS</h4>
+                        <div class="space-y-3">
+                            <div class="text-slate-800 font-medium">Current Assets:</div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Cash in Bank</span>
+                                <span class="text-emerald-600">₱890,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Accounts Receivable</span>
+                                <span class="text-emerald-600">₱430,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Inventory</span>
+                                <span class="text-emerald-600">₱150,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4 border-b border-slate-300 pb-2">
+                                <span class="text-slate-800 font-medium">Total Current Assets</span>
+                                <span class="text-emerald-600 font-bold">₱1,470,000</span>
+                            </div>
+                            
+                            <div class="text-slate-800 font-medium pt-2">Fixed Assets:</div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Equipment (net)</span>
+                                <span class="text-emerald-600">₱280,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Furniture & Fixtures (net)</span>
+                                <span class="text-emerald-600">₱120,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4 border-b border-slate-300 pb-2">
+                                <span class="text-slate-800 font-medium">Total Fixed Assets</span>
+                                <span class="text-emerald-600 font-bold">₱400,000</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center border-t-2 border-blue-500 pt-4">
+                                <span class="text-lg font-bold text-slate-800">TOTAL ASSETS</span>
+                                <span class="text-lg font-bold text-emerald-600">₱1,870,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liabilities & Equity -->
+                    <div class="glass rounded-xl p-6">
+                        <h4 class="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-300 pb-2">LIABILITIES & EQUITY</h4>
+                        <div class="space-y-3">
+                            <div class="text-slate-800 font-medium">Current Liabilities:</div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Accounts Payable</span>
+                                <span class="text-red-600">₱110,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Accrued Expenses</span>
+                                <span class="text-red-600">₱45,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4 border-b border-slate-300 pb-2">
+                                <span class="text-slate-800 font-medium">Total Current Liabilities</span>
+                                <span class="text-red-600 font-bold">₱155,000</span>
+                            </div>
+                            
+                            <div class="text-slate-800 font-medium pt-2">Long-term Liabilities:</div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Long-term Loan</span>
+                                <span class="text-red-600">₱200,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4 border-b border-slate-300 pb-2">
+                                <span class="text-slate-800 font-medium">Total Liabilities</span>
+                                <span class="text-red-600 font-bold">₱355,000</span>
+                            </div>
+                            
+                            <div class="text-slate-800 font-medium pt-2">Owner's Equity:</div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Capital</span>
+                                <span class="text-blue-600">₱1,000,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4">
+                                <span class="text-slate-600">Retained Earnings</span>
+                                <span class="text-blue-600">₱515,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-4 border-b border-slate-300 pb-2">
+                                <span class="text-slate-800 font-medium">Total Equity</span>
+                                <span class="text-blue-600 font-bold">₱1,515,000</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center border-t-2 border-blue-500 pt-4">
+                                <span class="text-lg font-bold text-slate-800">TOTAL LIAB. & EQUITY</span>
+                                <span class="text-lg font-bold text-emerald-600">₱1,870,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fixed Assets & Equity Section -->
+        <div id="assets-equity" class="section hidden">
+            <h2 class="text-3xl font-bold text-slate-800 mb-8">Assets & Equity</h2>
+            
+            <!-- Tab Navigation -->
+            <div class="flex space-x-4 mb-6">
+                <button class="tab-button active px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200" onclick="showTab('fixed-assets')">
+                    🏢 Fixed Assets
+                </button>
+                <button class="tab-button px-4 py-2 rounded-lg bg-white text-slate-700 border border-slate-200" onclick="showTab('owners-equity')">
+                    💰 Owner's Capital/Equity
+                </button>
+            </div>
+
+            <!-- 6.1 Fixed Assets -->
+            <div id="fixed-assets" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Fixed Assets Register</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('addAsset')">
+                            + Add Asset
+                        </button>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('fixed-assets')">
+                            📤 Export
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('importData')">
+                            📥 Import
+                        </button>
+                        <button class="bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('pasteData')">
+                            📋 Paste
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6 mb-6">
+                    <div class="bg-blue-100 p-4 rounded-lg mb-4">
+                        <h4 class="text-slate-800 font-semibold mb-2">Depreciation Formula (Straight-line):</h4>
+                        <p class="text-slate-600 text-sm">Annual Depreciation = (Cost - Salvage Value) ÷ Useful Life</p>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700 text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Asset Name</th>
+                                    <th class="text-left p-3 font-semibold">Purchase Date</th>
+                                    <th class="text-right p-3 font-semibold">Cost</th>
+                                    <th class="text-center p-3 font-semibold">Useful Life</th>
+                                    <th class="text-left p-3 font-semibold">Depreciation Method</th>
+                                    <th class="text-right p-3 font-semibold">Accumulated Depreciation</th>
+                                    <th class="text-right p-3 font-semibold">Net Book Value</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">MacBook Pro 16"</td>
+                                    <td class="p-3">2024-01-15</td>
+                                    <td class="p-3 text-right">₱150,000</td>
+                                    <td class="p-3 text-center">3 years</td>
+                                    <td class="p-3">Straight-line</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱45,833</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱104,167</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editAsset('ASSET-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteAsset('ASSET-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">Office Furniture Set</td>
+                                    <td class="p-3">2024-03-01</td>
+                                    <td class="p-3 text-right">₱80,000</td>
+                                    <td class="p-3 text-center">5 years</td>
+                                    <td class="p-3">Straight-line</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱12,000</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱68,000</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editAsset('ASSET-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteAsset('ASSET-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">Development Server</td>
+                                    <td class="p-3">2024-06-10</td>
+                                    <td class="p-3 text-right">₱120,000</td>
+                                    <td class="p-3 text-center">4 years</td>
+                                    <td class="p-3">Straight-line</td>
+                                    <td class="p-3 text-right text-red-600 font-medium">₱15,000</td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱105,000</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editAsset('ASSET-003')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteAsset('ASSET-003')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-t-2 border-blue-500 bg-blue-50">
+                                    <td class="p-3 font-bold">TOTALS</td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3 text-right font-bold">₱350,000</td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3 text-right font-bold text-red-600">₱72,833</td>
+                                    <td class="p-3 text-right font-bold text-emerald-600">₱277,167</td>
+                                    <td class="p-3"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6.2 Owner's Capital/Equity -->
+            <div id="owners-equity" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-slate-800">Owner's Capital/Equity Transactions</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('addEquity')">
+                            + Add Transaction
+                        </button>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('equity')">
+                            📤 Export
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('importData')">
+                            📥 Import
+                        </button>
+                        <button class="bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="showModal('pasteData')">
+                            📋 Paste
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-300 bg-slate-50">
+                                    <th class="text-left p-3 font-semibold">Date</th>
+                                    <th class="text-left p-3 font-semibold">Type</th>
+                                    <th class="text-right p-3 font-semibold">Amount</th>
+                                    <th class="text-right p-3 font-semibold">Running Balance</th>
+                                    <th class="text-left p-3 font-semibold">Notes</th>
+                                    <th class="text-center p-3 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2024-01-01</td>
+                                    <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Investment</span></td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱500,000</td>
+                                    <td class="p-3 text-right">₱500,000</td>
+                                    <td class="p-3">Initial capital investment</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editEquity('EQ-001')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteEquity('EQ-001')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2024-06-15</td>
+                                    <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Investment</span></td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱300,000</td>
+                                    <td class="p-3 text-right">₱800,000</td>
+                                    <td class="p-3">Additional capital for expansion</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editEquity('EQ-002')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteEquity('EQ-002')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2024-09-30</td>
+                                    <td class="p-3"><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Dividend</span></td>
+                                    <td class="p-3 text-right text-red-600 font-medium">(₱100,000)</td>
+                                    <td class="p-3 text-right">₱700,000</td>
+                                    <td class="p-3">Quarterly dividend distribution</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editEquity('EQ-003')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteEquity('EQ-003')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                    <td class="p-3">2024-12-15</td>
+                                    <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Investment</span></td>
+                                    <td class="p-3 text-right text-emerald-600 font-medium">₱200,000</td>
+                                    <td class="p-3 text-right">₱900,000</td>
+                                    <td class="p-3">Year-end capital injection</td>
+                                    <td class="p-3 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editEquity('EQ-004')">✏️</button>
+                                        <button class="text-red-600 hover:text-red-800" onclick="deleteEquity('EQ-004')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row border-t-2 border-blue-500 bg-blue-50">
+                                    <td class="p-3 font-bold">CURRENT BALANCE</td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3 text-right font-bold text-emerald-600">₱900,000</td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Forecast Section -->
+        <div id="forecast" class="section hidden">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">Financial Forecast</h2>
+                <div class="flex space-x-2">
+                    <button class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="exportTable('forecast')">
+                        📤 Export
+                    </button>
+                    <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm hover-lift" onclick="refreshForecast()">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="glass rounded-xl p-6">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Revenue Forecast (Next 6 Months)</h3>
+                    <div class="chart-container bg-white rounded-lg p-4">
+                        <canvas id="revenueForecastChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass rounded-xl p-6">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Cash Flow Forecast</h3>
+                    <div class="chart-container bg-white rounded-lg p-4">
+                        <canvas id="cashForecastChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl p-6">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Detailed Forecast Table</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-slate-700 text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-300 bg-slate-50">
+                                <th class="text-left p-3 font-semibold">Month</th>
+                                <th class="text-right p-3 font-semibold">Projected Revenue</th>
+                                <th class="text-right p-3 font-semibold">Projected Costs</th>
+                                <th class="text-right p-3 font-semibold">Projected Profit</th>
+                                <th class="text-right p-3 font-semibold">Cash Inflow</th>
+                                <th class="text-right p-3 font-semibold">Cash Outflow</th>
+                                <th class="text-right p-3 font-semibold">Net Cash Flow</th>
+                                <th class="text-right p-3 font-semibold">Ending Balance</th>
+                                <th class="text-center p-3 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                <td class="p-3">Jan 2025</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱420,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱290,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱130,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱380,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱310,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱70,000</td>
+                                <td class="p-3 text-right">₱960,000</td>
+                                <td class="p-3 text-center">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editForecast('JAN-2025')">✏️</button>
+                                    <button class="text-green-600 hover:text-green-800" onclick="viewForecastDetails('JAN-2025')">👁️</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                <td class="p-3">Feb 2025</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱450,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱315,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱135,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱420,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱335,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱85,000</td>
+                                <td class="p-3 text-right">₱1,045,000</td>
+                                <td class="p-3 text-center">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editForecast('FEB-2025')">✏️</button>
+                                    <button class="text-green-600 hover:text-green-800" onclick="viewForecastDetails('FEB-2025')">👁️</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                <td class="p-3">Mar 2025</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱480,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱340,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱140,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱450,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱360,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱90,000</td>
+                                <td class="p-3 text-right">₱1,135,000</td>
+                                <td class="p-3 text-center">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editForecast('MAR-2025')">✏️</button>
+                                    <button class="text-green-600 hover:text-green-800" onclick="viewForecastDetails('MAR-2025')">👁️</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                <td class="p-3">Apr 2025</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱510,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱365,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱145,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱480,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱385,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱95,000</td>
+                                <td class="p-3 text-right">₱1,230,000</td>
+                                <td class="p-3 text-center">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editForecast('APR-2025')">✏️</button>
+                                    <button class="text-green-600 hover:text-green-800" onclick="viewForecastDetails('APR-2025')">👁️</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                <td class="p-3">May 2025</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱540,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱390,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱150,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱510,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱410,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱100,000</td>
+                                <td class="p-3 text-right">₱1,330,000</td>
+                                <td class="p-3 text-center">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editForecast('MAY-2025')">✏️</button>
+                                    <button class="text-green-600 hover:text-green-800" onclick="viewForecastDetails('MAY-2025')">👁️</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                                <td class="p-3">Jun 2025</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱570,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱415,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱155,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱540,000</td>
+                                <td class="p-3 text-right text-red-600 font-medium">₱435,000</td>
+                                <td class="p-3 text-right text-emerald-600 font-medium">₱105,000</td>
+                                <td class="p-3 text-right">₱1,435,000</td>
+                                <td class="p-3 text-center">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editForecast('JUN-2025')">✏️</button>
+                                    <button class="text-green-600 hover:text-green-800" onclick="viewForecastDetails('JUN-2025')">👁️</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Transaction Modal -->
+    <div id="addTransaction" class="modal">
+        <div class="glass rounded-xl p-6 w-full max-w-md animate-slide-up">
+            <h3 class="text-xl font-bold text-white mb-4">Add New Transaction</h3>
+            <form class="space-y-4">
+                <div>
+                    <label class="text-white block mb-2">Date</label>
+                    <input type="date" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                </div>
+                <div>
+                    <label class="text-white block mb-2">Type</label>
+                    <select class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                        <option>Collection</option>
+                        <option>Expense</option>
+                        <option>AP</option>
+                        <option>AR</option>
+                        <option>Adjustment</option>
+                        <option>Journal Entry</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-white block mb-2">COA Code</label>
+                    <select class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                        <option>1001 - Cash in Bank</option>
+                        <option>1201 - Accounts Receivable</option>
+                        <option>4001 - Service Revenue</option>
+                        <option>5001 - Project Materials</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-white block mb-2">Amount</label>
+                    <input type="number" placeholder="0.00" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                </div>
+                <div>
+                    <label class="text-white block mb-2">Project ID (Optional)</label>
+                    <select class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                        <option value="">Select Project</option>
+                        <option>PRJ-001 - Website Redesign</option>
+                        <option>PRJ-002 - Mobile App Development</option>
+                    </select>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="button" class="gradient-primary px-4 py-2 rounded-lg text-white hover-lift" onclick="addTransaction()">Add Transaction</button>
+                    <button type="button" class="glass px-4 py-2 rounded-lg text-white hover-lift" onclick="hideModal('addTransaction')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div id="addProject" class="modal">
+        <div class="glass rounded-xl p-6 w-full max-w-md animate-slide-up">
+            <h3 class="text-xl font-bold text-white mb-4">Add New Project</h3>
+            <form class="space-y-4">
+                <div>
+                    <label class="text-white block mb-2">Project Name</label>
+                    <input type="text" placeholder="Enter project name" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                </div>
+                <div>
+                    <label class="text-white block mb-2">Project Type</label>
+                    <select class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                        <option>Web Development</option>
+                        <option>Mobile Development</option>
+                        <option>Consulting</option>
+                        <option>Design</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-white block mb-2">Client</label>
+                    <input type="text" placeholder="Client name" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                </div>
+                <div>
+                    <label class="text-white block mb-2">Contract Value</label>
+                    <input type="number" placeholder="0.00" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                </div>
+                <div>
+                    <label class="text-white block mb-2">Start Date</label>
+                    <input type="date" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                </div>
+                <div>
+                    <label class="text-white block mb-2">Project Manager</label>
+                    <input type="text" placeholder="Manager name" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                </div>
+                <div class="flex space-x-4">
+                    <button type="button" class="gradient-primary px-4 py-2 rounded-lg text-white hover-lift" onclick="addProject()">Create Project</button>
+                    <button type="button" class="glass px-4 py-2 rounded-lg text-white hover-lift" onclick="hideModal('addProject')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Vue instance can be initialized here
+        // Data storage and persistence
+        let appData = {
+            transactions: [],
+            projects: [],
+            accounts: [],
+            settings: {}
+        };
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            initializeCharts();
+            setupAutoSave();
+        });
+
+        // Data persistence functions
+        function saveData() {
+            localStorage.setItem('financeFlowData', JSON.stringify(appData));
+            showNotification('Data saved automatically', 'success');
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('financeFlowData');
+            if (savedData) {
+                appData = JSON.parse(savedData);
+                renderAllTables();
+                updateKPIs();
+            } else {
+                // Initialize with sample data
+                initializeSampleData();
+            }
+        }
+
+        function setupAutoSave() {
+            // Auto-save every 30 seconds
+            setInterval(saveData, 30000);
+            
+            // Save on page unload
+            window.addEventListener('beforeunload', saveData);
+        }
+
+        function initializeSampleData() {
+            appData.transactions = [
+                {
+                    id: 'TXN-001',
+                    date: '2024-12-15',
+                    type: 'Collection',
+                    coaCode: '4001',
+                    series500: false,
+                    projectId: 'PRJ-001',
+                    clientVendor: 'ABC Corp',
+                    invoiceNumber: 'INV-001',
+                    paymentMethod: 'Bank Transfer',
+                    debit: 250000,
+                    credit: 0,
+                    notes: 'Website project payment'
+                },
+                {
+                    id: 'TXN-002',
+                    date: '2024-12-14',
+                    type: 'Expense',
+                    coaCode: '5001',
+                    series500: true,
+                    projectId: 'PRJ-002',
+                    clientVendor: 'Tech Solutions',
+                    invoiceNumber: 'BILL-001',
+                    paymentMethod: 'Cash',
+                    debit: 0,
+                    credit: 85000,
+                    notes: 'Development tools'
+                }
+            ];
+
+            appData.projects = [
+                {
+                    id: 'PRJ-001',
+                    name: 'Website Redesign',
+                    type: 'Web Development',
+                    location: 'Manila',
+                    client: 'ABC Corp',
+                    startDate: '2024-10-01',
+                    endDate: '2024-12-31',
+                    status: 'Active',
+                    contractValue: 500000,
+                    manager: 'John Doe'
+                },
+                {
+                    id: 'PRJ-002',
+                    name: 'Mobile App Development',
+                    type: 'Mobile Development',
+                    location: 'Cebu',
+                    client: 'XYZ Ltd',
+                    startDate: '2024-11-01',
+                    endDate: '2025-03-31',
+                    status: 'In Progress',
+                    contractValue: 750000,
+                    manager: 'Jane Smith'
+                }
+            ];
+
+            saveData();
+        }
+
+        // Smart calculation functions (Excel-like formulas)
+        function calculateTotalRevenue() {
+            return appData.transactions
+                .filter(t => t.type === 'Collection')
+                .reduce((sum, t) => sum + t.debit, 0);
+        }
+
+        function calculateTotalCost() {
+            return appData.transactions
+                .filter(t => t.series500 === true)
+                .reduce((sum, t) => sum + t.credit, 0);
+        }
+
+        function calculateProjectRevenue(projectId) {
+            return appData.transactions
+                .filter(t => t.projectId === projectId && t.type === 'Collection')
+                .reduce((sum, t) => sum + t.debit, 0);
+        }
+
+        function calculateProjectCost(projectId) {
+            return appData.transactions
+                .filter(t => t.projectId === projectId && t.series500 === true)
+                .reduce((sum, t) => sum + t.credit, 0);
+        }
+
+        function calculateGrossMargin() {
+            const revenue = calculateTotalRevenue();
+            const cost = calculateTotalCost();
+            return revenue > 0 ? ((revenue - cost) / revenue * 100).toFixed(1) : 0;
+        }
+
+        // XLOOKUP equivalent function
+        function xlookup(lookupValue, lookupArray, returnArray, ifNotFound = null) {
+            const index = lookupArray.findIndex(item => item === lookupValue);
+            return index !== -1 ? returnArray[index] : ifNotFound;
+        }
+
+        // SUMIF equivalent function
+        function sumif(range, criteria, sumRange = null) {
+            const actualSumRange = sumRange || range;
+            return range.reduce((sum, item, index) => {
+                if (typeof criteria === 'function' ? criteria(item) : item === criteria) {
+                    return sum + (actualSumRange[index] || 0);
+                }
+                return sum;
+            }, 0);
+        }
+
+        // SUMIFS equivalent function
+        function sumifs(sumRange, ...criteriaRangeAndCriteria) {
+            return sumRange.reduce((sum, value, index) => {
+                let matches = true;
+                for (let i = 0; i < criteriaRangeAndCriteria.length; i += 2) {
+                    const range = criteriaRangeAndCriteria[i];
+                    const criteria = criteriaRangeAndCriteria[i + 1];
+                    if (typeof criteria === 'function' ? !criteria(range[index]) : range[index] !== criteria) {
+                        matches = false;
+                        break;
+                    }
+                }
+                return matches ? sum + value : sum;
+            }, 0);
+        }
+
+        // Navigation functions
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.sidebar-item').classList.add('active');
+        }
+
+        // Tab functions
+        function showTab(tabId) {
+            // Get the parent section
+            const parentSection = event.target.closest('.section');
+            
+            // Hide all tab contents in this section
+            parentSection.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            parentSection.querySelector(`#${tabId}`).classList.add('active');
+            
+            // Update tab button active state
+            parentSection.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Data functions
+        function refreshData() {
+            // Simulate data refresh with animation
+            const kpiCards = document.querySelectorAll('.glass');
+            kpiCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        card.style.transform = 'scale(1)';
+                    }, 200);
+                }, index * 100);
+            });
+            
+            // Show success message
+            showNotification('Data refreshed successfully!', 'success');
+        }
+
+        // Table rendering functions
+        function renderAllTables() {
+            renderTransactionsTable();
+            renderProjectsTable();
+        }
+
+        function renderTransactionsTable() {
+            const tbody = document.getElementById('transactionsList');
+            if (!tbody) return;
+
+            tbody.innerHTML = appData.transactions.map(transaction => `
+                <tr class="table-row border-b border-slate-100 hover:bg-slate-50">
+                    <td class="p-3">${transaction.date}</td>
+                    <td class="p-3">${transaction.id}</td>
+                    <td class="p-3"><span class="bg-${getTypeColor(transaction.type)}-100 text-${getTypeColor(transaction.type)}-800 px-2 py-1 rounded text-xs">${transaction.type}</span></td>
+                    <td class="p-3">${transaction.coaCode}</td>
+                    <td class="p-3">${transaction.series500 ? '✓' : '-'}</td>
+                    <td class="p-3">${transaction.projectId || '-'}</td>
+                    <td class="p-3">${transaction.clientVendor}</td>
+                    <td class="p-3">${transaction.invoiceNumber}</td>
+                    <td class="p-3">${transaction.paymentMethod}</td>
+                    <td class="p-3 ${transaction.debit > 0 ? 'text-emerald-600 font-medium' : ''}">${transaction.debit > 0 ? '₱' + transaction.debit.toLocaleString() : '-'}</td>
+                    <td class="p-3 ${transaction.credit > 0 ? 'text-red-600 font-medium' : ''}">${transaction.credit > 0 ? '₱' + transaction.credit.toLocaleString() : '-'}</td>
+                    <td class="p-3">${transaction.notes}</td>
+                    <td class="p-3 text-center">
+                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editTransaction('${transaction.id}')">✏️</button>
+                        <button class="text-red-600 hover:text-red-800" onclick="deleteTransaction('${transaction.id}')">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getTypeColor(type) {
+            const colors = {
+                'Collection': 'emerald',
+                'Expense': 'amber',
+                'AP': 'red',
+                'AR': 'blue',
+                'Adjustment': 'purple',
+                'Journal Entry': 'gray'
+            };
+            return colors[type] || 'gray';
+        }
+
+        // CRUD operations
+        function addTransaction() {
+            const form = document.querySelector('#addTransaction form');
+            const formData = new FormData(form);
+            
+            const newTransaction = {
+                id: 'TXN-' + String(appData.transactions.length + 1).padStart(3, '0'),
+                date: formData.get('date'),
+                type: formData.get('type'),
+                coaCode: formData.get('coaCode'),
+                series500: formData.get('series500') === 'true',
+                projectId: formData.get('projectId'),
+                clientVendor: formData.get('clientVendor'),
+                invoiceNumber: formData.get('invoiceNumber'),
+                paymentMethod: formData.get('paymentMethod'),
+                debit: parseFloat(formData.get('debit')) || 0,
+                credit: parseFloat(formData.get('credit')) || 0,
+                notes: formData.get('notes')
+            };
+
+            appData.transactions.push(newTransaction);
+            renderTransactionsTable();
+            updateKPIs();
+            saveData();
+            
+            showNotification('Transaction added successfully!', 'success');
+            hideModal('addTransaction');
+            form.reset();
+        }
+
+        function editTransaction(id) {
+            const transaction = appData.transactions.find(t => t.id === id);
+            if (transaction) {
+                // Populate edit modal with transaction data
+                showModal('editTransaction');
+                // Implementation would populate form fields
+            }
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Are you sure you want to delete this transaction?')) {
+                appData.transactions = appData.transactions.filter(t => t.id !== id);
+                renderTransactionsTable();
+                updateKPIs();
+                saveData();
+                showNotification('Transaction deleted successfully!', 'success');
+            }
+        }
+
+        // Additional CRUD functions for other entities
+        function editLedgerEntry(id) {
+            showNotification('Edit ledger entry: ' + id, 'info');
+        }
+
+        function deleteLedgerEntry(id) {
+            if (confirm('Are you sure you want to delete this ledger entry?')) {
+                showNotification('Ledger entry deleted: ' + id, 'success');
+            }
+        }
+
+        function editPayable(id) {
+            showNotification('Edit payable: ' + id, 'info');
+        }
+
+        function deletePayable(id) {
+            if (confirm('Are you sure you want to delete this payable?')) {
+                showNotification('Payable deleted: ' + id, 'success');
+            }
+        }
+
+        function editReceivable(id) {
+            showNotification('Edit receivable: ' + id, 'info');
+        }
+
+        function deleteReceivable(id) {
+            if (confirm('Are you sure you want to delete this receivable?')) {
+                showNotification('Receivable deleted: ' + id, 'success');
+            }
+        }
+
+        function editProjectRevenue(id) {
+            showNotification('Edit project revenue: ' + id, 'info');
+        }
+
+        function viewProjectDetails(id) {
+            showNotification('Viewing project details: ' + id, 'info');
+        }
+
+        function refreshTrialBalance() {
+            showNotification('Trial balance refreshed!', 'success');
+        }
+
+        function refreshProjectRevenue() {
+            showNotification('Project revenue refreshed!', 'success');
+        }
+
+        function refreshProfitLoss() {
+            showNotification('Profit & Loss refreshed!', 'success');
+        }
+
+        // Additional functions for new features
+        function editProject(id) {
+            showNotification('Edit project: ' + id, 'info');
+        }
+
+        function deleteProject(id) {
+            if (confirm('Are you sure you want to delete this project?')) {
+                showNotification('Project deleted: ' + id, 'success');
+            }
+        }
+
+        function editAccount(id) {
+            showNotification('Edit account: ' + id, 'info');
+        }
+
+        function deleteAccount(id) {
+            if (confirm('Are you sure you want to delete this account?')) {
+                showNotification('Account deleted: ' + id, 'success');
+            }
+        }
+
+        function editExpenseCode(id) {
+            showNotification('Edit expense code: ' + id, 'info');
+        }
+
+        function deleteExpenseCode(id) {
+            if (confirm('Are you sure you want to delete this expense code?')) {
+                showNotification('Expense code deleted: ' + id, 'success');
+            }
+        }
+
+        function editProjectCost(id) {
+            showNotification('Edit project cost: ' + id, 'info');
+        }
+
+        function deleteProjectCost(id) {
+            if (confirm('Are you sure you want to delete this project cost?')) {
+                showNotification('Project cost deleted: ' + id, 'success');
+            }
+        }
+
+        function editBudget(id) {
+            showNotification('Edit budget: ' + id, 'info');
+        }
+
+        function viewBudgetDetails(id) {
+            showNotification('Viewing budget details: ' + id, 'info');
+        }
+
+        function editOverhead(id) {
+            showNotification('Edit overhead: ' + id, 'info');
+        }
+
+        function deleteOverhead(id) {
+            if (confirm('Are you sure you want to delete this overhead expense?')) {
+                showNotification('Overhead expense deleted: ' + id, 'success');
+            }
+        }
+
+        function editAsset(id) {
+            showNotification('Edit asset: ' + id, 'info');
+        }
+
+        function deleteAsset(id) {
+            if (confirm('Are you sure you want to delete this asset?')) {
+                showNotification('Asset deleted: ' + id, 'success');
+            }
+        }
+
+        function editEquity(id) {
+            showNotification('Edit equity transaction: ' + id, 'info');
+        }
+
+        function deleteEquity(id) {
+            if (confirm('Are you sure you want to delete this equity transaction?')) {
+                showNotification('Equity transaction deleted: ' + id, 'success');
+            }
+        }
+
+        function editForecast(id) {
+            showNotification('Edit forecast: ' + id, 'info');
+        }
+
+        function viewForecastDetails(id) {
+            showNotification('Viewing forecast details: ' + id, 'info');
+        }
+
+        function refreshProjectCost() {
+            showNotification('Project cost refreshed!', 'success');
+        }
+
+        function refreshBudgetActual() {
+            showNotification('Budget vs Actual refreshed!', 'success');
+        }
+
+        function refreshCashFlow() {
+            showNotification('Cash flow refreshed!', 'success');
+        }
+
+        function refreshBalanceSheet() {
+            showNotification('Balance sheet refreshed!', 'success');
+        }
+
+        function refreshForecast() {
+            showNotification('Forecast refreshed!', 'success');
+        }
+
+        // Import/Export functions
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'financeflow-data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function exportTable(tableName) {
+            let data = [];
+            let filename = '';
+            
+            switch(tableName) {
+                case 'transactions':
+                    data = appData.transactions;
+                    filename = 'transactions.csv';
+                    break;
+                case 'projects':
+                    data = appData.projects;
+                    filename = 'projects.csv';
+                    break;
+            }
+
+            if (data.length === 0) {
+                showNotification('No data to export', 'warning');
+                return;
+            }
+
+            const csv = convertToCSV(data);
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+            showNotification(`${tableName} exported successfully!`, 'success');
+        }
+
+        function convertToCSV(data) {
+            if (data.length === 0) return '';
+            
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => 
+                    headers.map(header => {
+                        const value = row[header];
+                        return typeof value === 'string' && value.includes(',') 
+                            ? `"${value}"` 
+                            : value;
+                    }).join(',')
+                )
+            ].join('\n');
+            
+            return csvContent;
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,.csv';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            if (file.name.endsWith('.json')) {
+                                const importedData = JSON.parse(e.target.result);
+                                if (confirm('This will replace all existing data. Continue?')) {
+                                    appData = importedData;
+                                    renderAllTables();
+                                    updateKPIs();
+                                    saveData();
+                                    showNotification('Data imported successfully!', 'success');
+                                }
+                            } else if (file.name.endsWith('.csv')) {
+                                // CSV import logic would go here
+                                showNotification('CSV import feature coming soon!', 'info');
+                            }
+                        } catch (error) {
+                            showNotification('Error importing data: ' + error.message, 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        function addProject() {
+            // Simulate adding project
+            showNotification('Project created successfully!', 'success');
+            hideModal('addProject');
+        }
+
+        // Paste functionality
+        function showPasteModal() {
+            showModal('pasteData');
+        }
+
+        function pasteFromClipboard() {
+            navigator.clipboard.readText().then(text => {
+                const rows = text.split('\n').filter(row => row.trim());
+                if (rows.length > 0) {
+                    // Process CSV-like data
+                    const processedRows = rows.map(row => row.split('\t'));
+                    showNotification(`Pasted ${processedRows.length} rows successfully!`, 'success');
+                    hideModal('pasteData');
+                } else {
+                    showNotification('No data found in clipboard', 'warning');
+                }
+            }).catch(err => {
+                showNotification('Could not read clipboard data', 'error');
+            });
+        }
+
+        // Additional modal functions
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+            } else {
+                // Create generic modal for missing ones
+                createGenericModal(modalId);
+            }
+        }
+
+        function createGenericModal(modalId) {
+            const modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="glass rounded-xl p-6 w-full max-w-md animate-slide-up">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4">${modalId.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</h3>
+                    <p class="text-slate-600 mb-4">This feature is coming soon!</p>
+                    <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white hover-lift" onclick="hideModal('${modalId}')">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.classList.add('show');
+        }
+
+        function updateKPIs() {
+            // Calculate real values from data
+            const totalRevenue = calculateTotalRevenue();
+            const totalCost = calculateTotalCost();
+            const grossMargin = calculateGrossMargin();
+            const netProfit = totalRevenue - totalCost - 250000; // Subtract overhead
+            const cashBalance = 890000; // This would be calculated from cash transactions
+
+            // Update KPI displays
+            document.getElementById('totalRevenue').textContent = '₱' + totalRevenue.toLocaleString();
+            document.getElementById('totalCost').textContent = '₱' + totalCost.toLocaleString();
+            document.getElementById('grossMargin').textContent = grossMargin + '%';
+            document.getElementById('netProfit').textContent = '₱' + netProfit.toLocaleString();
+            document.getElementById('cashBalance').textContent = '₱' + cashBalance.toLocaleString();
+        }
+
+        function animateNumber(element, start, end, prefix = '') {
+            const duration = 1000;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const current = Math.floor(start + (end - start) * progress);
+                element.textContent = prefix + current.toLocaleString();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 animate-slide-up ${
+                type === 'success' ? 'gradient-success' : 
+                type === 'error' ? 'gradient-warning' : 'glass'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Chart initialization
+        function initializeCharts() {
+            // Revenue vs Net Profit Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [200000, 220000, 180000, 250000, 240000, 280000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Net Profit',
+                        data: [50000, 60000, 45000, 70000, 65000, 80000],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#374151'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#374151' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#374151' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+
+            // Cash Flow Chart
+            const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
+            new Chart(cashFlowCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Inflows',
+                        data: [300000, 350000, 280000, 400000, 380000, 420000],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)'
+                    }, {
+                        label: 'Outflows',
+                        data: [250000, 280000, 220000, 320000, 300000, 340000],
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#374151'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#374151' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#374151' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+
+            // Top Projects Chart
+            const projectsCtx = document.getElementById('projectsChart').getContext('2d');
+            new Chart(projectsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Website Redesign', 'Mobile App', 'E-commerce', 'Others'],
+                    datasets: [{
+                        data: [500000, 750000, 1200000, 300000],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Overhead Distribution Chart
+            const overheadCtx = document.getElementById('overheadChart').getContext('2d');
+            new Chart(overheadCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Salaries', 'Rent', 'Utilities', 'Marketing', 'Others'],
+                    datasets: [{
+                        data: [120000, 30000, 15000, 25000, 20000],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Budget vs Actual Chart (for Analysis section)
+            const budgetCtx = document.getElementById('budgetChart');
+            if (budgetCtx) {
+                new Chart(budgetCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Website Redesign', 'Mobile App', 'E-commerce'],
+                        datasets: [{
+                            label: 'Budgeted',
+                            data: [500000, 800000, 1200000],
+                            backgroundColor: 'rgba(59, 130, 246, 0.6)'
+                        }, {
+                            label: 'Actual',
+                            data: [375000, 360000, 120000],
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Revenue Forecast Chart
+            const revenueForecastCtx = document.getElementById('revenueForecastChart');
+            if (revenueForecastCtx) {
+                new Chart(revenueForecastCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025'],
+                        datasets: [{
+                            label: 'Projected Revenue',
+                            data: [420000, 450000, 480000, 510000, 540000, 570000],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            borderDash: [5, 5]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Cash Forecast Chart
+            const cashForecastCtx = document.getElementById('cashForecastChart');
+            if (cashForecastCtx) {
+                new Chart(cashForecastCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025'],
+                        datasets: [{
+                            label: 'Projected Cash Balance',
+                            data: [960000, 1045000, 1135000, 1230000, 1330000, 1435000],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            borderDash: [5, 5]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+            }
+        });
+
+        // Add some interactive animations
+        document.addEventListener('mousemove', function(e) {
+            const cards = document.querySelectorAll('.hover-lift');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(5px)`;
+                } else {
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+                }
+            });
+        });
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976f1de580f3158d',t:'MTc1NjUwMjY4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
